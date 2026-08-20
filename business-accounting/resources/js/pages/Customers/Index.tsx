@@ -1,23 +1,23 @@
 import AppLayout from '@/layouts/app-layout';
 import { Link, useForm } from '@inertiajs/react';
 
-type Sale = {
+type Customer = {
     id: number;
-    amount: string;
-    status: string;
-    sold_at: string;
+    name: string;
+    email: string | null;
+    phone: string | null;
 };
 
 type Props = {
-    sales: Sale[];
+    customers: Customer[];
 };
 
-export default function Index({ sales }: Props) {
+export default function Index({ customers }: Props) {
     const { delete: destroy, processing } = useForm();
 
-    const handleDelete = (saleId: number) => {
-        if (confirm('Are you sure you want to delete this sale?')) {
-            destroy(`/sales/${saleId}`);
+    const handleDelete = (customerId: number) => {
+        if (confirm('Are you sure you want to delete this customer?')) {
+            destroy(`/customers/${customerId}`);
         }
     };
 
@@ -25,58 +25,56 @@ export default function Index({ sales }: Props) {
         <AppLayout>
             <div className="p-6">
                 <div className="flex items-center justify-between">
-                    <h1 className="text-2xl font-bold">Sales</h1>
+                    <h1 className="text-2xl font-bold">Customers</h1>
 
                     <Link
-                        href="/sales/create"
+                        href="/customers/create"
                         className="rounded bg-black px-4 py-2 text-white"
                     >
-                        Create Sale
+                        Create Customer
                     </Link>
                 </div>
 
                 <div className="mt-6 space-y-3">
-                    {sales.length === 0 ? (
+                    {customers.length === 0 ? (
                         <p className="text-gray-500">
-                            No sales found.
+                            No customers found.
                         </p>
                     ) : (
-                        sales.map((sale) => (
+                        customers.map((customer) => (
                             <div
-                                key={sale.id}
+                                key={customer.id}
                                 className="rounded-lg border p-4"
                             >
                                 <div className="flex items-center justify-between">
                                     <div>
                                         <p className="font-semibold">
-                                            Sale #{sale.id}
+                                            {customer.name}
                                         </p>
 
-                                        <p>Amount: {sale.amount}</p>
-                                        <p>Status: {sale.status}</p>
-                                        <p>Sold at: {sale.sold_at}</p>
+                                        <p>
+                                            Email:{' '}
+                                            {customer.email ?? 'Not provided'}
+                                        </p>
+
+                                        <p>
+                                            Phone:{' '}
+                                            {customer.phone ?? 'Not provided'}
+                                        </p>
                                     </div>
 
                                     <div className="flex items-center gap-3">
                                         <Link
-                                            href={`/sales/${sale.id}/payments/create`}
-                                            className="text-green-600"
-                                        >
-                                            Add Payment
-                                        </Link>
-                                        
-                                        <Link
-                                            href={`/sales/${sale.id}/edit`}
+                                            href={`/customers/${customer.id}/edit`}
                                             className="text-blue-600"
                                         >
                                             Edit
                                         </Link>
-                                      
 
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                handleDelete(sale.id)
+                                                handleDelete(customer.id)
                                             }
                                             disabled={processing}
                                             className="text-red-600 disabled:opacity-50"

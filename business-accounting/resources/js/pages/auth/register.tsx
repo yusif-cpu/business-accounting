@@ -1,120 +1,138 @@
+import AuthLayout from '@/layouts/auth-layout';
+import register from '@/routes/register';
 import { Form, Head } from '@inertiajs/react';
-import InputError from '@/components/input-error';
-import PasswordInput from '@/components/password-input';
-import TextLink from '@/components/text-link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Spinner } from '@/components/ui/spinner';
-import { login } from '@/routes';
-import { store } from '@/routes/register';
 
-type Props = {
-    passwordRules: string;
-};
-
-export default function Register({ passwordRules }: Props) {
+export default function Register() {
     return (
-        <>
+        <AuthLayout
+            title="Create an account"
+            description="Enter your details below to create your account"
+        >
             <Head title="Register" />
+
             <Form
-                {...store.form()}
+                {...register.store.form()}
                 resetOnSuccess={['password', 'password_confirmation']}
-                disableWhileProcessing
                 className="flex flex-col gap-6"
             >
                 {({ processing, errors }) => (
                     <>
                         <div className="grid gap-6">
                             <div className="grid gap-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
+                                <label htmlFor="business_name">
+                                    Business Name
+                                </label>
+
+                                <input
+                                    id="business_name"
+                                    name="business_name"
                                     type="text"
                                     required
                                     autoFocus
                                     tabIndex={1}
-                                    autoComplete="name"
-                                    name="name"
-                                    placeholder="Full name"
+                                    placeholder="My Business"
                                 />
-                                <InputError
-                                    message={errors.name}
-                                    className="mt-2"
-                                />
+
+                                {errors.business_name && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.business_name}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">Email address</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
+                                <label htmlFor="name">Name</label>
+
+                                <input
+                                    id="name"
+                                    name="name"
+                                    type="text"
                                     required
                                     tabIndex={2}
-                                    autoComplete="email"
-                                    name="email"
-                                    placeholder="email@example.com"
+                                    placeholder="Your name"
                                 />
-                                <InputError message={errors.email} />
+
+                                {errors.name && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.name}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">Password</Label>
-                                <PasswordInput
-                                    id="password"
+                                <label htmlFor="email">
+                                    Email address
+                                </label>
+
+                                <input
+                                    id="email"
+                                    name="email"
+                                    type="email"
                                     required
                                     tabIndex={3}
-                                    autoComplete="new-password"
-                                    name="password"
-                                    placeholder="Password"
-                                    passwordrules={passwordRules}
+                                    placeholder="email@example.com"
                                 />
-                                <InputError message={errors.password} />
+
+                                {errors.email && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.email}
+                                    </p>
+                                )}
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password_confirmation">
-                                    Confirm password
-                                </Label>
-                                <PasswordInput
-                                    id="password_confirmation"
+                                <label htmlFor="password">
+                                    Password
+                                </label>
+
+                                <input
+                                    id="password"
+                                    name="password"
+                                    type="password"
                                     required
                                     tabIndex={4}
-                                    autoComplete="new-password"
-                                    name="password_confirmation"
-                                    placeholder="Confirm password"
-                                    passwordrules={passwordRules}
                                 />
-                                <InputError
-                                    message={errors.password_confirmation}
-                                />
+
+                                {errors.password && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.password}
+                                    </p>
+                                )}
                             </div>
 
-                            <Button
-                                type="submit"
-                                className="mt-2 w-full"
-                                tabIndex={5}
-                                data-test="register-user-button"
-                            >
-                                {processing && <Spinner />}
-                                Create account
-                            </Button>
-                        </div>
+                            <div className="grid gap-2">
+                                <label htmlFor="password_confirmation">
+                                    Confirm password
+                                </label>
 
-                        <div className="text-center text-sm text-muted-foreground">
-                            Already have an account?{' '}
-                            <TextLink href={login()} tabIndex={6}>
-                                Log in
-                            </TextLink>
+                                <input
+                                    id="password_confirmation"
+                                    name="password_confirmation"
+                                    type="password"
+                                    required
+                                    tabIndex={5}
+                                />
+
+                                {errors.password_confirmation && (
+                                    <p className="text-sm text-red-600">
+                                        {errors.password_confirmation}
+                                    </p>
+                                )}
+                            </div>
+
+                            <button
+                                type="submit"
+                                tabIndex={6}
+                                disabled={processing}
+                            >
+                                {processing
+                                    ? 'Creating account...'
+                                    : 'Create account'}
+                            </button>
                         </div>
                     </>
                 )}
             </Form>
-        </>
+        </AuthLayout>
     );
 }
-
-Register.layout = {
-    title: 'Create an account',
-    description: 'Enter your details below to create your account',
-};
