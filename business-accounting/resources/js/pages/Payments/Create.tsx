@@ -1,4 +1,5 @@
 import AppLayout from '@/layouts/app-layout';
+import FormError from '@/components/form-error';
 import { useForm } from '@inertiajs/react';
 import { FormEvent } from 'react';
 
@@ -26,88 +27,136 @@ export default function Create({ sale }: Props) {
 
     return (
         <AppLayout>
-            <div className="p-6">
-                <h1 className="text-2xl font-bold">
-                    Add Payment to Sale #{sale.id}
-                </h1>
+            <div className="min-h-full bg-neutral-950 p-6 text-neutral-100">
+                <div className="mx-auto max-w-2xl">
+                    <div className="mb-6">
+                        <p className="text-sm font-medium text-neutral-500">
+                            Sale #{sale.id}
+                        </p>
 
-                <p className="mt-2 text-gray-600">
-                    Sale amount: ${sale.amount}
-                </p>
+                        <h1 className="mt-1 text-2xl font-semibold tracking-tight">
+                            Add Payment
+                        </h1>
 
-                <form onSubmit={submit} className="mt-6 max-w-xl space-y-4">
-                    <div>
-                        <label>Amount</label>
-
-                        <input
-                            type="number"
-                            step="0.01"
-                            min="0.01"
-                            value={data.amount}
-                            onChange={(event) =>
-                                setData('amount', event.target.value)
-                            }
-                            className="mt-1 w-full rounded border p-2"
-                        />
-
-                        {errors.amount && (
-                            <p className="mt-1 text-sm text-red-600">
-                                {errors.amount}
-                            </p>
-                        )}
+                        <p className="mt-2 text-sm text-neutral-400">
+                            Record a payment for this sale.
+                        </p>
                     </div>
 
-                    <div>
-                        <label>Payment Method</label>
+                    <div className="mb-6 rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+                        <p className="text-sm text-neutral-500">
+                            Sale Amount
+                        </p>
 
-                        <select
-                            value={data.method}
-                            onChange={(event) =>
-                                setData('method', event.target.value)
-                            }
-                            className="mt-1 w-full rounded border p-2"
-                        >
-                            <option value="cash">Cash</option>
-                            <option value="card">Card</option>
-                            <option value="bank_transfer">
-                                Bank Transfer
-                            </option>
-                        </select>
-
-                        {errors.method && (
-                            <p className="mt-1 text-sm text-red-600">
-                                {errors.method}
-                            </p>
-                        )}
+                        <p className="mt-1 text-2xl font-semibold text-neutral-100">
+                            ${Number(sale.amount).toFixed(2)}
+                        </p>
                     </div>
 
-                    <div>
-                        <label>Paid At</label>
+                    <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6 shadow-xl shadow-black/10">
+                        <form onSubmit={submit} className="space-y-6">
+                            <div>
+                                <label
+                                    htmlFor="amount"
+                                    className="text-sm font-medium text-neutral-200"
+                                >
+                                    Payment Amount
+                                </label>
 
-                        <input
-                            type="datetime-local"
-                            value={data.paid_at}
-                            onChange={(event) =>
-                                setData('paid_at', event.target.value)
-                            }
-                            className="mt-1 w-full rounded border p-2"
-                        />
+                                <input
+                                    id="amount"
+                                    type="number"
+                                    step="0.01"
+                                    min="0.01"
+                                    value={data.amount}
+                                    onChange={(event) =>
+                                        setData(
+                                            'amount',
+                                            event.target.value,
+                                        )
+                                    }
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 outline-none transition placeholder:text-neutral-500 focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
+                                    placeholder="0.00"
+                                />
 
-                        {errors.paid_at && (
-                            <p className="mt-1 text-sm text-red-600">
-                                {errors.paid_at}
-                            </p>
-                        )}
+                                <FormError message={errors.amount} />
+                            </div>
+
+                            <div>
+                                <label
+                                    htmlFor="method"
+                                    className="text-sm font-medium text-neutral-200"
+                                >
+                                    Payment Method
+                                </label>
+
+                                <select
+                                    id="method"
+                                    value={data.method}
+                                    onChange={(event) =>
+                                        setData(
+                                            'method',
+                                            event.target.value,
+                                        )
+                                    }
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 outline-none transition focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
+                                >
+                                    <option value="cash">Cash</option>
+                                    <option value="card">Card</option>
+                                    <option value="bank_transfer">
+                                        Bank Transfer
+                                    </option>
+                                </select>
+
+                                <FormError message={errors.method} />
+                            </div>
+
+                            <div>
+                                <label
+                                    htmlFor="paid_at"
+                                    className="text-sm font-medium text-neutral-200"
+                                >
+                                    Paid At
+                                </label>
+
+                                <input
+                                    id="paid_at"
+                                    type="datetime-local"
+                                    value={data.paid_at}
+                                    onChange={(event) =>
+                                        setData(
+                                            'paid_at',
+                                            event.target.value,
+                                        )
+                                    }
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 outline-none transition focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
+                                />
+
+                                <FormError message={errors.paid_at} />
+                            </div>
+
+                            <div className="flex justify-end gap-3 border-t border-neutral-800 pt-5">
+                                <button
+                                    type="button"
+                                    onClick={() => window.history.back()}
+                                    className="rounded-xl border border-neutral-800 bg-neutral-900 px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800"
+                                >
+                                    Cancel
+                                </button>
+
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="rounded-xl bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {processing
+                                        ? 'Adding...'
+                                        : 'Add Payment'}
+                                </button>
+                            </div>
+                        </form>
                     </div>
-
-                    <button
-                        type="submit"
-                        disabled={processing}
-                        className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-                    >
-                        {processing ? 'Adding...' : 'Add Payment'}
-                    </button>
-                </form>
+                </div>
             </div>
         </AppLayout>
     );

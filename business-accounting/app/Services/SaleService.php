@@ -39,10 +39,9 @@ class SaleService
         $sale->update([
             'customer_id' => $data['customer_id'] ?? null,
             'amount' => $data['amount'],
-            'status' => $data['status'],
         ]);
 
-        return $sale;
+        return $sale->fresh();
     }
 
     public function deleteSale(Sale $sale): void

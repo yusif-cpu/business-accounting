@@ -41,7 +41,9 @@ class ExpenseController extends Controller
             $request->validated()
         );
 
-        return redirect()->route('expenses.index');
+        return redirect()
+            ->route('expenses.index')
+            ->with('success', 'Expense created successfully.');
     }
 
     public function edit(Expense $expense): Response
@@ -64,7 +66,9 @@ class ExpenseController extends Controller
             $request->validated()
         );
 
-        return redirect()->route('expenses.index');
+        return redirect()
+            ->route('expenses.index')
+            ->with('success', 'Expense updated successfully.');
     }
 
     public function destroy(Expense $expense): RedirectResponse
@@ -73,6 +77,8 @@ class ExpenseController extends Controller
 
         $this->expenseService->deleteExpense($expense);
 
-        return redirect()->route('expenses.index');
+        return redirect()
+            ->route('expenses.index')
+            ->with('success', 'Expense deleted successfully.');
     }
 }

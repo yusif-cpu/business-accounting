@@ -1,5 +1,6 @@
 import { Link } from '@inertiajs/react';
 import {
+    ArrowDownUp,
     BookOpen,
     ChartNoAxesCombined,
     FolderGit2,
@@ -8,7 +9,6 @@ import {
     Users,
 } from 'lucide-react';
 
-import AppLogo from '@/components/app-logo';
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
@@ -45,6 +45,11 @@ const mainNavItems: NavItem[] = [
         href: '/expenses',
         icon: ReceiptText,
     },
+    {
+        title: 'Operations',
+        href: '/operations',
+        icon: ArrowDownUp,
+    },
 ];
 
 const footerNavItems: NavItem[] = [
@@ -68,7 +73,13 @@ export function AppSidebar() {
                     <SidebarMenuItem>
                         <SidebarMenuButton size="lg" asChild>
                             <Link href={dashboard()} prefetch>
-                                <AppLogo />
+                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-sm font-bold text-white">
+                                    B
+                                </div>
+
+                                <span className="truncate text-sm font-semibold tracking-tight">
+                                    BASED.AZ
+                                </span>
                             </Link>
                         </SidebarMenuButton>
                     </SidebarMenuItem>

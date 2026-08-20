@@ -38,7 +38,9 @@ class PaymentController extends Controller
             $request->validated()
         );
 
-        return redirect()->route('sales.show', $sale);
+        return redirect()
+            ->route('sales.show', $sale)
+            ->with('success', 'Payment added successfully.');
     }
 
     public function destroy(Payment $payment): RedirectResponse
@@ -47,6 +49,8 @@ class PaymentController extends Controller
 
         $this->paymentService->deletePayment($payment);
 
-        return redirect()->back();
+        return redirect()
+            ->back()
+            ->with('success', 'Payment deleted successfully.');
     }
 }

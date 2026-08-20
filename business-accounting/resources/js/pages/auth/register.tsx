@@ -1,134 +1,152 @@
 import AuthLayout from '@/layouts/auth-layout';
-import register from '@/routes/register';
 import { Form, Head } from '@inertiajs/react';
+
+import InputError from '@/components/input-error';
+import PasswordInput from '@/components/password-input';
+import TextLink from '@/components/text-link';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Spinner } from '@/components/ui/spinner';
+
+import register from '@/routes/register';
 
 export default function Register() {
     return (
         <AuthLayout
             title="Create an account"
-            description="Enter your details below to create your account"
+            description="Set up your business account to get started"
         >
-            <Head title="Register" />
+            <Head title="Create account" />
 
             <Form
                 {...register.store.form()}
-                resetOnSuccess={['password', 'password_confirmation']}
+                resetOnSuccess={[
+                    'password',
+                    'password_confirmation',
+                ]}
                 className="flex flex-col gap-6"
             >
                 {({ processing, errors }) => (
                     <>
-                        <div className="grid gap-6">
+                        <div className="grid gap-5">
                             <div className="grid gap-2">
-                                <label htmlFor="business_name">
-                                    Business Name
-                                </label>
+                                <Label htmlFor="business_name">
+                                    Business name
+                                </Label>
 
-                                <input
+                                <Input
                                     id="business_name"
                                     name="business_name"
                                     type="text"
                                     required
                                     autoFocus
                                     tabIndex={1}
+                                    autoComplete="organization"
                                     placeholder="My Business"
                                 />
 
-                                {errors.business_name && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.business_name}
-                                    </p>
-                                )}
+                                <InputError
+                                    message={errors.business_name}
+                                />
                             </div>
 
                             <div className="grid gap-2">
-                                <label htmlFor="name">Name</label>
+                                <Label htmlFor="name">
+                                    Your name
+                                </Label>
 
-                                <input
+                                <Input
                                     id="name"
                                     name="name"
                                     type="text"
                                     required
                                     tabIndex={2}
-                                    placeholder="Your name"
+                                    autoComplete="name"
+                                    placeholder="John Doe"
                                 />
 
-                                {errors.name && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.name}
-                                    </p>
-                                )}
+                                <InputError message={errors.name} />
                             </div>
 
                             <div className="grid gap-2">
-                                <label htmlFor="email">
+                                <Label htmlFor="email">
                                     Email address
-                                </label>
+                                </Label>
 
-                                <input
+                                <Input
                                     id="email"
                                     name="email"
                                     type="email"
                                     required
                                     tabIndex={3}
-                                    placeholder="email@example.com"
+                                    autoComplete="email"
+                                    placeholder="you@example.com"
                                 />
 
-                                {errors.email && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.email}
-                                    </p>
-                                )}
+                                <InputError message={errors.email} />
                             </div>
 
                             <div className="grid gap-2">
-                                <label htmlFor="password">
+                                <Label htmlFor="password">
                                     Password
-                                </label>
+                                </Label>
 
-                                <input
+                                <PasswordInput
                                     id="password"
                                     name="password"
-                                    type="password"
                                     required
                                     tabIndex={4}
+                                    autoComplete="new-password"
+                                    placeholder="Create a password"
                                 />
 
-                                {errors.password && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.password}
-                                    </p>
-                                )}
+                                <InputError message={errors.password} />
                             </div>
 
                             <div className="grid gap-2">
-                                <label htmlFor="password_confirmation">
+                                <Label htmlFor="password_confirmation">
                                     Confirm password
-                                </label>
+                                </Label>
 
-                                <input
+                                <PasswordInput
                                     id="password_confirmation"
                                     name="password_confirmation"
-                                    type="password"
                                     required
                                     tabIndex={5}
+                                    autoComplete="new-password"
+                                    placeholder="Confirm your password"
                                 />
 
-                                {errors.password_confirmation && (
-                                    <p className="text-sm text-red-600">
-                                        {errors.password_confirmation}
-                                    </p>
-                                )}
+                                <InputError
+                                    message={
+                                        errors.password_confirmation
+                                    }
+                                />
                             </div>
 
-                            <button
+                            <Button
                                 type="submit"
+                                className="mt-2 w-full"
                                 tabIndex={6}
                                 disabled={processing}
                             >
+                                {processing && <Spinner />}
+
                                 {processing
                                     ? 'Creating account...'
                                     : 'Create account'}
-                            </button>
+                            </Button>
+                        </div>
+
+                        <div className="text-center text-sm text-muted-foreground">
+                            Already have an account?{' '}
+                            <TextLink
+                                href="/login"
+                                tabIndex={7}
+                            >
+                                Log in
+                            </TextLink>
                         </div>
                     </>
                 )}

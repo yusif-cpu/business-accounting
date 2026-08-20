@@ -47,7 +47,9 @@ class SaleController extends Controller
             $request->validated()
         );
 
-        return redirect()->route('sales.index');
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Sale created successfully.');
     }
 
     public function show(Sale $sale): Response
@@ -92,7 +94,9 @@ class SaleController extends Controller
             $request->validated()
         );
 
-        return redirect()->route('sales.index');
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Sale updated successfully.');
     }
 
     public function destroy(Sale $sale): RedirectResponse
@@ -101,6 +105,8 @@ class SaleController extends Controller
 
         $this->saleService->deleteSale($sale);
 
-        return redirect()->route('sales.index');
+        return redirect()
+            ->route('sales.index')
+            ->with('success', 'Sale deleted successfully.');
     }
 }
