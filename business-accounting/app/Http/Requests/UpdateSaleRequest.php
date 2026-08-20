@@ -2,7 +2,9 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Sale;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class UpdateSaleRequest extends FormRequest
 {
@@ -16,17 +18,33 @@ class UpdateSaleRequest extends FormRequest
         return [
             'customer_id' => [
                 'nullable',
-                'exists:customers,id',
+                Rule::exists('customers', 'id')->where(
+                    fn ($query) => $query->where(
+                        'business_id',
+                        auth()->user()->business_id
+                    )
+                ),
             ],
             'amount' => [
                 'required',
                 'numeric',
-                'min:0.01',
+                'min:' . $this->minimumSaleAmount(),
             ],
             'status' => [
                 'required',
                 'in:pending,paid,cancelled',
             ],
         ];
+    }
+
+    private function minimumSaleAmount(): float
+    {
+        /** @var Sale $sale */
+        $sale = $this->route('sale');
+
+        return max(
+            0.01,
+            (float) $sale->payments()->sum('amount')
+        );
     }
 }

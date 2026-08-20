@@ -4,6 +4,7 @@ namespace App\Http\Requests;
 
 use App\Models\Sale;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\ValidationException;
 
 class StorePaymentRequest extends FormRequest
 {
@@ -36,6 +37,12 @@ class StorePaymentRequest extends FormRequest
     {
         /** @var Sale $sale */
         $sale = $this->route('sale');
+
+        if ($sale->business_id !== auth()->user()->business_id) {
+            throw ValidationException::withMessages([
+                'sale' => 'You are not allowed to add a payment to this sale.',
+            ]);
+        }
 
         $paidAmount = (float) $sale->payments()->sum('amount');
         $saleAmount = (float) $sale->amount;

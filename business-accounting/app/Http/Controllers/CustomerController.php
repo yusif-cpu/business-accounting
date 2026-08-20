@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateCustomerRequest;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -43,7 +44,7 @@ class CustomerController extends Controller
 
     public function edit(Customer $customer): Response
     {
-        $this->authorizeCustomer($customer);
+        Gate::authorize('update', $customer);
 
         return Inertia::render('Customers/Edit', [
             'customer' => $customer,
@@ -54,7 +55,7 @@ class CustomerController extends Controller
         UpdateCustomerRequest $request,
         Customer $customer
     ): RedirectResponse {
-        $this->authorizeCustomer($customer);
+        Gate::authorize('update', $customer);
 
         $this->customerService->updateCustomer(
             $customer,
@@ -66,18 +67,10 @@ class CustomerController extends Controller
 
     public function destroy(Customer $customer): RedirectResponse
     {
-        $this->authorizeCustomer($customer);
+        Gate::authorize('delete', $customer);
 
         $this->customerService->deleteCustomer($customer);
 
         return redirect()->route('customers.index');
-    }
-
-    private function authorizeCustomer(Customer $customer): void
-    {
-        abort_if(
-            $customer->business_id !== auth()->user()->business_id,
-            403
-        );
     }
 }

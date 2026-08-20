@@ -8,6 +8,7 @@ use App\Models\Customer;
 use App\Models\Sale;
 use App\Services\SaleService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -51,7 +52,7 @@ class SaleController extends Controller
 
     public function show(Sale $sale): Response
     {
-        $this->authorizeSale($sale);
+        Gate::authorize('view', $sale);
 
         $sale->load([
             'customer',
@@ -67,7 +68,7 @@ class SaleController extends Controller
 
     public function edit(Sale $sale): Response
     {
-        $this->authorizeSale($sale);
+        Gate::authorize('update', $sale);
 
         $customers = Customer::where(
             'business_id',
@@ -84,7 +85,7 @@ class SaleController extends Controller
         UpdateSaleRequest $request,
         Sale $sale
     ): RedirectResponse {
-        $this->authorizeSale($sale);
+        Gate::authorize('update', $sale);
 
         $this->saleService->updateSale(
             $sale,
@@ -96,18 +97,10 @@ class SaleController extends Controller
 
     public function destroy(Sale $sale): RedirectResponse
     {
-        $this->authorizeSale($sale);
+        Gate::authorize('delete', $sale);
 
         $this->saleService->deleteSale($sale);
 
         return redirect()->route('sales.index');
-    }
-
-    private function authorizeSale(Sale $sale): void
-    {
-        abort_if(
-            $sale->business_id !== auth()->user()->business_id,
-            403
-        );
     }
 }

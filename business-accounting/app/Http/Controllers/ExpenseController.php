@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateExpenseRequest;
 use App\Models\Expense;
 use App\Services\ExpenseService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -45,7 +46,7 @@ class ExpenseController extends Controller
 
     public function edit(Expense $expense): Response
     {
-        $this->authorizeExpense($expense);
+        Gate::authorize('update', $expense);
 
         return Inertia::render('Expenses/Edit', [
             'expense' => $expense,
@@ -56,7 +57,7 @@ class ExpenseController extends Controller
         UpdateExpenseRequest $request,
         Expense $expense
     ): RedirectResponse {
-        $this->authorizeExpense($expense);
+        Gate::authorize('update', $expense);
 
         $this->expenseService->updateExpense(
             $expense,
@@ -68,18 +69,10 @@ class ExpenseController extends Controller
 
     public function destroy(Expense $expense): RedirectResponse
     {
-        $this->authorizeExpense($expense);
+        Gate::authorize('delete', $expense);
 
         $this->expenseService->deleteExpense($expense);
 
         return redirect()->route('expenses.index');
-    }
-
-    private function authorizeExpense(Expense $expense): void
-    {
-        abort_if(
-            $expense->business_id !== auth()->user()->business_id,
-            403
-        );
     }
 }

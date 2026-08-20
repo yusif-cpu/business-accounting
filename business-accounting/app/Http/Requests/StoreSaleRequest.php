@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreSaleRequest extends FormRequest
 {
@@ -16,7 +17,12 @@ class StoreSaleRequest extends FormRequest
         return [
             'customer_id' => [
                 'nullable',
-                'exists:customers,id',
+                Rule::exists('customers', 'id')->where(
+                    fn ($query) => $query->where(
+                        'business_id',
+                        auth()->user()->business_id
+                    )
+                ),
             ],
             'amount' => [
                 'required',

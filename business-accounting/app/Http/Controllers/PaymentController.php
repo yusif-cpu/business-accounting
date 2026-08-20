@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Sale;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -19,7 +20,7 @@ class PaymentController extends Controller
 
     public function create(Sale $sale): Response
     {
-        $this->authorizeSale($sale);
+        Gate::authorize('view', $sale);
 
         return Inertia::render('Payments/Create', [
             'sale' => $sale,
@@ -30,7 +31,7 @@ class PaymentController extends Controller
         StorePaymentRequest $request,
         Sale $sale
     ): RedirectResponse {
-        $this->authorizeSale($sale);
+        Gate::authorize('view', $sale);
 
         $this->paymentService->createPayment(
             $sale,
@@ -42,26 +43,10 @@ class PaymentController extends Controller
 
     public function destroy(Payment $payment): RedirectResponse
     {
-        $this->authorizePayment($payment);
+        Gate::authorize('delete', $payment);
 
         $this->paymentService->deletePayment($payment);
 
         return redirect()->back();
-    }
-
-    private function authorizeSale(Sale $sale): void
-    {
-        abort_if(
-            $sale->business_id !== auth()->user()->business_id,
-            403
-        );
-    }
-
-    private function authorizePayment(Payment $payment): void
-    {
-        abort_if(
-            $payment->sale->business_id !== auth()->user()->business_id,
-            403
-        );
     }
 }
