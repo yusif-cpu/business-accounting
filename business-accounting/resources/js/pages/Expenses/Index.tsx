@@ -1,11 +1,13 @@
 import AppLayout from '@/layouts/app-layout';
 import { Link, useForm } from '@inertiajs/react';
+import { formatDate, formatMoney } from '@/lib/formatters';
 
-type Customer = {
+type Expense = {
     id: number;
-    name: string;
-    email: string | null;
-    phone: string | null;
+    description: string;
+    amount: string;
+    category: string | null;
+    expense_date: string;
 };
 
 type PaginationLink = {
@@ -14,21 +16,21 @@ type PaginationLink = {
     active: boolean;
 };
 
-type CustomersPagination = {
-    data: Customer[];
+type ExpensesPagination = {
+    data: Expense[];
     links: PaginationLink[];
 };
 
 type Props = {
-    customers: CustomersPagination;
+    expenses: ExpensesPagination;
 };
 
-export default function Index({ customers }: Props) {
+export default function Index({ expenses }: Props) {
     const { delete: destroy, processing } = useForm();
 
-    const handleDelete = (customerId: number) => {
-        if (confirm('Are you sure you want to delete this customer?')) {
-            destroy(`/customers/${customerId}`);
+    const handleDelete = (expenseId: number) => {
+        if (confirm('Are you sure you want to delete this expense?')) {
+            destroy(`/expenses/${expenseId}`);
         }
     };
 
@@ -37,56 +39,62 @@ export default function Index({ customers }: Props) {
             <div className="p-6">
                 <div className="flex items-center justify-between">
                     <div>
-                        <h1 className="text-2xl font-bold">Customers</h1>
+                        <h1 className="text-2xl font-bold">Expenses</h1>
 
                         <p className="mt-1 text-gray-500">
-                            Manage your business customers.
+                            Manage your business expenses.
                         </p>
                     </div>
 
                     <Link
-                        href="/customers/create"
+                        href="/expenses/create"
                         className="rounded bg-black px-4 py-2 text-white"
                     >
-                        Create Customer
+                        Create Expense
                     </Link>
                 </div>
 
                 <div className="mt-6 space-y-3">
-                    {customers.data.length === 0 ? (
+                    {expenses.data.length === 0 ? (
                         <div className="rounded-lg border p-6">
                             <p className="text-gray-500">
-                                No customers found.
+                                No expenses found.
                             </p>
                         </div>
                     ) : (
-                        customers.data.map((customer) => (
+                        expenses.data.map((expense) => (
                             <div
-                                key={customer.id}
+                                key={expense.id}
                                 className="rounded-lg border p-4"
                             >
                                 <div className="flex items-center justify-between gap-6">
                                     <div className="space-y-1">
                                         <p className="font-semibold">
-                                            {customer.name}
+                                            {expense.description}
                                         </p>
 
                                         <p>
-                                            Email:{' '}
-                                            {customer.email ??
-                                                'Not provided'}
+                                            Amount:{' '}
+                                            {formatMoney(expense.amount)}
                                         </p>
 
                                         <p>
-                                            Phone:{' '}
-                                            {customer.phone ??
+                                            Category:{' '}
+                                            {expense.category ??
                                                 'Not provided'}
+                                        </p>
+
+                                        <p className="text-sm text-gray-500">
+                                            Date:{' '}
+                                            {formatDate(
+                                                expense.expense_date,
+                                            )}
                                         </p>
                                     </div>
 
                                     <div className="flex items-center gap-3">
                                         <Link
-                                            href={`/customers/${customer.id}/edit`}
+                                            href={`/expenses/${expense.id}/edit`}
                                             className="text-blue-600"
                                         >
                                             Edit
@@ -95,7 +103,7 @@ export default function Index({ customers }: Props) {
                                         <button
                                             type="button"
                                             onClick={() =>
-                                                handleDelete(customer.id)
+                                                handleDelete(expense.id)
                                             }
                                             disabled={processing}
                                             className="text-red-600 disabled:opacity-50"
@@ -109,9 +117,9 @@ export default function Index({ customers }: Props) {
                     )}
                 </div>
 
-                {customers.links.length > 3 && (
+                {expenses.links.length > 3 && (
                     <div className="mt-6 flex flex-wrap gap-2">
-                        {customers.links.map((link, index) => (
+                        {expenses.links.map((link, index) => (
                             <Link
                                 key={index}
                                 href={link.url ?? '#'}

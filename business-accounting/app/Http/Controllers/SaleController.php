@@ -2,18 +2,20 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\SaleService;
-use Inertia\Inertia;
-use Inertia\Response;
+use App\Http\Requests\StoreSaleRequest;
+use App\Http\Requests\UpdateSaleRequest;
 use App\Models\Customer;
 use App\Models\Sale;
+use App\Services\SaleService;
 use Illuminate\Http\RedirectResponse;
+use Inertia\Inertia;
+use Inertia\Response;
 
 class SaleController extends Controller
 {
-    public function __construct(private SaleService $saleService)
-    {
+    public function __construct(
+        private SaleService $saleService
+    ) {
     }
 
     public function index(): Response
@@ -21,32 +23,46 @@ class SaleController extends Controller
         $sales = $this->saleService->getSalesForCurrentBusiness();
 
         return Inertia::render('Sales/Index', [
-            'sales' => $sales
+            'sales' => $sales,
         ]);
     }
 
     public function create(): Response
     {
-        $customers = Customer::where('business_id', auth()->user()->business_id)->get();
+        $customers = Customer::where(
+            'business_id',
+            auth()->user()->business_id
+        )->get();
 
         return Inertia::render('Sales/Create', [
-            'customers' => $customers
+            'customers' => $customers,
         ]);
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreSaleRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'customer_id' => ['nullable', 'exists:customers,id'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
-        ]);
-
         $this->saleService->createSale(
             auth()->user()->business_id,
-            $validated
+            $request->validated()
         );
 
         return redirect()->route('sales.index');
+    }
+
+    public function show(Sale $sale): Response
+    {
+        $this->authorizeSale($sale);
+
+        $sale->load([
+            'customer',
+            'payments' => function ($query) {
+                $query->latest('paid_at');
+            },
+        ]);
+
+        return Inertia::render('Sales/Show', [
+            'sale' => $sale,
+        ]);
     }
 
     public function edit(Sale $sale): Response
@@ -64,17 +80,16 @@ class SaleController extends Controller
         ]);
     }
 
-    public function update(Request $request, Sale $sale): RedirectResponse
-    {
+    public function update(
+        UpdateSaleRequest $request,
+        Sale $sale
+    ): RedirectResponse {
         $this->authorizeSale($sale);
 
-        $validated = $request->validate([
-            'customer_id' => ['nullable', 'exists:customers,id'],
-            'amount' => ['required', 'numeric', 'min:0.01'],
-            'status' => ['required', 'in:pending,paid,cancelled'],
-        ]);
-
-        $this->saleService->updateSale($sale, $validated);
+        $this->saleService->updateSale(
+            $sale,
+            $request->validated()
+        );
 
         return redirect()->route('sales.index');
     }

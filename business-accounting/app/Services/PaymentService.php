@@ -19,15 +19,41 @@ class PaymentService
         Sale $sale,
         array $data
     ): Payment {
-        return $sale->payments()->create([
+        $payment = $sale->payments()->create([
             'amount' => $data['amount'],
             'method' => $data['method'],
             'paid_at' => $data['paid_at'],
         ]);
+
+        $this->updateSaleStatus($sale);
+
+        return $payment;
     }
 
     public function deletePayment(Payment $payment): void
     {
+        $sale = $payment->sale;
+
         $payment->delete();
+
+        $this->updateSaleStatus($sale);
+    }
+
+    private function updateSaleStatus(Sale $sale): void
+    {
+        $paidAmount = (float) $sale->payments()->sum('amount');
+        $saleAmount = (float) $sale->amount;
+
+        if ($paidAmount >= $saleAmount) {
+            $sale->update([
+                'status' => 'paid',
+            ]);
+
+            return;
+        }
+
+        $sale->update([
+            'status' => 'pending',
+        ]);
     }
 }

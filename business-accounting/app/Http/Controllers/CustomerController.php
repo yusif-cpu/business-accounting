@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCustomerRequest;
+use App\Http\Requests\UpdateCustomerRequest;
 use App\Models\Customer;
 use App\Services\CustomerService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -30,17 +31,11 @@ class CustomerController extends Controller
         return Inertia::render('Customers/Create');
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(StoreCustomerRequest $request): RedirectResponse
     {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-        ]);
-
         $this->customerService->createCustomer(
             auth()->user()->business_id,
-            $validated
+            $request->validated()
         );
 
         return redirect()->route('customers.index');
@@ -56,20 +51,14 @@ class CustomerController extends Controller
     }
 
     public function update(
-        Request $request,
+        UpdateCustomerRequest $request,
         Customer $customer
     ): RedirectResponse {
         $this->authorizeCustomer($customer);
 
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['nullable', 'email', 'max:255'],
-            'phone' => ['nullable', 'string', 'max:50'],
-        ]);
-
         $this->customerService->updateCustomer(
             $customer,
-            $validated
+            $request->validated()
         );
 
         return redirect()->route('customers.index');

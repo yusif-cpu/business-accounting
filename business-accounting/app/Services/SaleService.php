@@ -3,20 +3,26 @@
 namespace App\Services;
 
 use App\Models\Sale;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+
 class SaleService
 {
-    public function getSalesForCurrentBusiness(): Collection
+    public function getSalesForCurrentBusiness(): LengthAwarePaginator
     {
-        $businessId = auth()->user()->business_id;
-
-        return Sale::where('business_id', $businessId)
-        ->latest('sold_at')
-        ->get();
+        return Sale::with('customer')
+            ->withSum('payments', 'amount')
+            ->where(
+                'business_id',
+                auth()->user()->business_id
+            )
+            ->latest('sold_at')
+            ->paginate(10);
     }
 
-    public function createSale(int $businessId, array $data): Sale
-    {
+    public function createSale(
+        int $businessId,
+        array $data
+    ): Sale {
         return Sale::create([
             'business_id' => $businessId,
             'customer_id' => $data['customer_id'] ?? null,
@@ -26,8 +32,10 @@ class SaleService
         ]);
     }
 
-    public function updateSale(Sale $sale, array $data): Sale
-    {
+    public function updateSale(
+        Sale $sale,
+        array $data
+    ): Sale {
         $sale->update([
             'customer_id' => $data['customer_id'] ?? null,
             'amount' => $data['amount'],

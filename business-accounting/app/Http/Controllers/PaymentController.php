@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePaymentRequest;
 use App\Models\Payment;
 use App\Models\Sale;
 use App\Services\PaymentService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -27,34 +27,17 @@ class PaymentController extends Controller
     }
 
     public function store(
-        Request $request,
+        StorePaymentRequest $request,
         Sale $sale
     ): RedirectResponse {
         $this->authorizeSale($sale);
 
-        $validated = $request->validate([
-            'amount' => [
-                'required',
-                'numeric',
-                'min:0.01',
-                'max:' . $this->getRemainingAmount($sale),
-            ],
-            'method' => [
-                'required',
-                'in:cash,card,bank_transfer',
-            ],
-            'paid_at' => [
-                'required',
-                'date',
-            ],
-        ]);
-
         $this->paymentService->createPayment(
             $sale,
-            $validated
+            $request->validated()
         );
 
-        return redirect()->route('sales.index');
+        return redirect()->route('sales.show', $sale);
     }
 
     public function destroy(Payment $payment): RedirectResponse
@@ -80,12 +63,5 @@ class PaymentController extends Controller
             $payment->sale->business_id !== auth()->user()->business_id,
             403
         );
-    }
-
-    private function getRemainingAmount(Sale $sale): float
-    {
-        $paidAmount = (float) $sale->payments()->sum('amount');
-
-        return (float) $sale->amount - $paidAmount;
     }
 }

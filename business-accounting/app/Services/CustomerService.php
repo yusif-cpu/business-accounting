@@ -3,16 +3,18 @@
 namespace App\Services;
 
 use App\Models\Customer;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class CustomerService
 {
-    public function getCustomersForCurrentBusiness(): Collection
+    public function getCustomersForCurrentBusiness(): LengthAwarePaginator
     {
         return Customer::where(
             'business_id',
             auth()->user()->business_id
-        )->latest()->get();
+        )
+            ->latest()
+            ->paginate(10);
     }
 
     public function createCustomer(

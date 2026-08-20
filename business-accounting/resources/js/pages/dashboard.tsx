@@ -1,36 +1,108 @@
-import { Head } from '@inertiajs/react';
-import { PlaceholderPattern } from '@/components/ui/placeholder-pattern';
-import { dashboard } from '@/routes';
+import AppLayout from '@/layouts/app-layout';
+import { formatMoney } from '@/lib/formatters';
 
-export default function Dashboard() {
+type DashboardData = {
+    totalSales: number;
+    collected: number;
+    outstanding: number;
+    expenses: number;
+    profit: number;
+    salesCount: number;
+    customersCount: number;
+};
+
+type Props = {
+    data: DashboardData;
+};
+
+export default function Dashboard({ data }: Props) {
     return (
-        <>
-            <Head title="Dashboard" />
-            <div className="flex h-full flex-1 flex-col gap-4 overflow-x-auto rounded-xl p-4">
-                <div className="grid auto-rows-min gap-4 md:grid-cols-3">
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+        <AppLayout>
+            <div className="p-6">
+                <div>
+                    <h1 className="text-2xl font-bold">
+                        Dashboard
+                    </h1>
+
+                    <p className="mt-1 text-gray-500">
+                        Overview of your business finances.
+                    </p>
+                </div>
+
+                <div className="mt-6 grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                    <div className="rounded-lg border p-5">
+                        <p className="text-sm text-gray-500">
+                            Total Sales
+                        </p>
+
+                        <p className="mt-2 text-2xl font-bold">
+                            {formatMoney(data.totalSales)}
+                        </p>
                     </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+                    <div className="rounded-lg border p-5">
+                        <p className="text-sm text-gray-500">
+                            Collected
+                        </p>
+
+                        <p className="mt-2 text-2xl font-bold">
+                            {formatMoney(data.collected)}
+                        </p>
                     </div>
-                    <div className="relative aspect-video overflow-hidden rounded-xl border border-sidebar-border/70 dark:border-sidebar-border">
-                        <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+                    <div className="rounded-lg border p-5">
+                        <p className="text-sm text-gray-500">
+                            Outstanding
+                        </p>
+
+                        <p className="mt-2 text-2xl font-bold">
+                            {formatMoney(data.outstanding)}
+                        </p>
+                    </div>
+
+                    <div className="rounded-lg border p-5">
+                        <p className="text-sm text-gray-500">
+                            Expenses
+                        </p>
+
+                        <p className="mt-2 text-2xl font-bold">
+                            {formatMoney(data.expenses)}
+                        </p>
+                    </div>
+
+                    <div className="rounded-lg border p-5">
+                        <p className="text-sm text-gray-500">
+                            Profit
+                        </p>
+
+                        <p className="mt-2 text-2xl font-bold">
+                            {formatMoney(data.profit)}
+                        </p>
                     </div>
                 </div>
-                <div className="relative min-h-[100vh] flex-1 overflow-hidden rounded-xl border border-sidebar-border/70 md:min-h-min dark:border-sidebar-border">
-                    <PlaceholderPattern className="absolute inset-0 size-full stroke-neutral-900/20 dark:stroke-neutral-100/20" />
+
+                <div className="mt-6 grid gap-4 md:grid-cols-2">
+                    <div className="rounded-lg border p-5">
+                        <p className="text-sm text-gray-500">
+                            Sales Count
+                        </p>
+
+                        <p className="mt-2 text-2xl font-bold">
+                            {data.salesCount}
+                        </p>
+                    </div>
+
+                    <div className="rounded-lg border p-5">
+                        <p className="text-sm text-gray-500">
+                            Customers
+                        </p>
+
+                        <p className="mt-2 text-2xl font-bold">
+                            {data.customersCount}
+                        </p>
+                    </div>
                 </div>
             </div>
-        </>
+        </AppLayout>
     );
 }
-
-Dashboard.layout = {
-    breadcrumbs: [
-        {
-            title: 'Dashboard',
-            href: dashboard(),
-        },
-    ],
-};
