@@ -1,7 +1,7 @@
-import AppLayout from '@/layouts/app-layout';
-import DeleteConfirmation from '@/components/delete-confirmation';
 import { Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import DeleteConfirmation from '@/components/delete-confirmation';
+import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatMoney } from '@/lib/formatters';
 
 type Expense = {

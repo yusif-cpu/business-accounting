@@ -15,8 +15,7 @@ class CustomerController extends Controller
 {
     public function __construct(
         private CustomerService $customerService
-    ) {
-    }
+    ) {}
 
     public function index(): Response
     {

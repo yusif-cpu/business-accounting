@@ -29,7 +29,7 @@ class UpdateSaleRequest extends FormRequest
             'amount' => [
                 'required',
                 'numeric',
-                'min:' . $this->minimumSaleAmount(),
+                'min:'.$this->minimumSaleAmount(),
             ],
         ];
     }

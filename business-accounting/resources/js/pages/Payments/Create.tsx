@@ -1,7 +1,7 @@
-import AppLayout from '@/layouts/app-layout';
-import FormError from '@/components/form-error';
 import { useForm } from '@inertiajs/react';
-import { FormEvent } from 'react';
+import type { FormEvent } from 'react';
+import FormError from '@/components/form-error';
+import AppLayout from '@/layouts/app-layout';
 
 type Sale = {
     id: number;
@@ -44,9 +44,7 @@ export default function Create({ sale }: Props) {
                     </div>
 
                     <div className="mb-6 rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-                        <p className="text-sm text-neutral-500">
-                            Sale Amount
-                        </p>
+                        <p className="text-sm text-neutral-500">Sale Amount</p>
 
                         <p className="mt-1 text-2xl font-semibold text-neutral-100">
                             ${Number(sale.amount).toFixed(2)}
@@ -70,12 +68,9 @@ export default function Create({ sale }: Props) {
                                     min="0.01"
                                     value={data.amount}
                                     onChange={(event) =>
-                                        setData(
-                                            'amount',
-                                            event.target.value,
-                                        )
+                                        setData('amount', event.target.value)
                                     }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 outline-none transition placeholder:text-neutral-500 focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 transition outline-none placeholder:text-neutral-500 focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
                                     placeholder="0.00"
                                 />
 
@@ -94,12 +89,9 @@ export default function Create({ sale }: Props) {
                                     id="method"
                                     value={data.method}
                                     onChange={(event) =>
-                                        setData(
-                                            'method',
-                                            event.target.value,
-                                        )
+                                        setData('method', event.target.value)
                                     }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 outline-none transition focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 transition outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
                                 >
                                     <option value="cash">Cash</option>
                                     <option value="card">Card</option>
@@ -124,12 +116,9 @@ export default function Create({ sale }: Props) {
                                     type="datetime-local"
                                     value={data.paid_at}
                                     onChange={(event) =>
-                                        setData(
-                                            'paid_at',
-                                            event.target.value,
-                                        )
+                                        setData('paid_at', event.target.value)
                                     }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 outline-none transition focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 transition outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
                                 />
 
                                 <FormError message={errors.paid_at} />
@@ -149,9 +138,7 @@ export default function Create({ sale }: Props) {
                                     disabled={processing}
                                     className="rounded-xl bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white disabled:cursor-not-allowed disabled:opacity-50"
                                 >
-                                    {processing
-                                        ? 'Adding...'
-                                        : 'Add Payment'}
+                                    {processing ? 'Adding...' : 'Add Payment'}
                                 </button>
                             </div>
                         </form>

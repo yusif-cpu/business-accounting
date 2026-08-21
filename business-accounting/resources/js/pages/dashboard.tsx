@@ -1,6 +1,6 @@
+import { Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatMoney } from '@/lib/formatters';
-import { Link } from '@inertiajs/react';
 
 type MonthlyOverview = {
     label: string;
@@ -50,24 +50,16 @@ type StatCardProps = {
     description: string;
 };
 
-function StatCard({
-    label,
-    value,
-    description,
-}: StatCardProps) {
+function StatCard({ label, value, description }: StatCardProps) {
     return (
         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-            <p className="text-sm font-medium text-neutral-500">
-                {label}
-            </p>
+            <p className="text-sm font-medium text-neutral-500">{label}</p>
 
             <p className="mt-2 text-2xl font-semibold tracking-tight text-neutral-100">
                 {value}
             </p>
 
-            <p className="mt-2 text-xs text-neutral-500">
-                {description}
-            </p>
+            <p className="mt-2 text-xs text-neutral-500">{description}</p>
         </div>
     );
 }
@@ -83,7 +75,7 @@ function StatusBadge({ status }: { status: string }) {
         <span
             className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${
                 styles[status] ??
-                'bg-neutral-800 text-neutral-300 border-neutral-700'
+                'border-neutral-700 bg-neutral-800 text-neutral-300'
             }`}
         >
             {status}

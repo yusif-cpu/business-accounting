@@ -20,7 +20,7 @@ class StorePaymentRequest extends FormRequest
                 'required',
                 'numeric',
                 'min:0.01',
-                'max:' . $this->remainingAmount(),
+                'max:'.$this->remainingAmount(),
             ],
             'method' => [
                 'required',

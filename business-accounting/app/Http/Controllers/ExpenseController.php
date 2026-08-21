@@ -15,8 +15,7 @@ class ExpenseController extends Controller
 {
     public function __construct(
         private ExpenseService $expenseService
-    ) {
-    }
+    ) {}
 
     public function index(): Response
     {

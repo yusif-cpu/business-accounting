@@ -1,6 +1,6 @@
-import AppLayout from '@/layouts/app-layout';
-import FormError from '@/components/form-error';
 import { useForm } from '@inertiajs/react';
+import FormError from '@/components/form-error';
+import AppLayout from '@/layouts/app-layout';
 
 type Customer = {
     id: number;
@@ -69,11 +69,9 @@ export default function Create({ customers }: Props) {
                                             event.target.value,
                                         )
                                     }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 >
-                                    <option value="">
-                                        No customer
-                                    </option>
+                                    <option value="">No customer</option>
 
                                     {customers.map((customer) => (
                                         <option
@@ -106,7 +104,7 @@ export default function Create({ customers }: Props) {
                                         setData('amount', event.target.value)
                                     }
                                     placeholder="0.00"
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
                                 <FormError message={errors.amount} />
@@ -125,9 +123,7 @@ export default function Create({ customers }: Props) {
                                     disabled={processing}
                                     className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white disabled:opacity-50"
                                 >
-                                    {processing
-                                        ? 'Creating...'
-                                        : 'Create Sale'}
+                                    {processing ? 'Creating...' : 'Create Sale'}
                                 </button>
                             </div>
                         </form>

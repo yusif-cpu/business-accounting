@@ -1,7 +1,7 @@
-import AppLayout from '@/layouts/app-layout';
-import FormError from '@/components/form-error';
 import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import FormError from '@/components/form-error';
+import AppLayout from '@/layouts/app-layout';
 
 type Customer = {
     id: number;
@@ -23,9 +23,7 @@ type Props = {
     customers: Customer[];
 };
 
-function createFormData(
-    type: 'expense' | 'income',
-): OperationFormData {
+function createFormData(type: 'expense' | 'income'): OperationFormData {
     return {
         type,
         operation_date: new Date().toISOString().slice(0, 10),
@@ -41,18 +39,11 @@ function createFormData(
 export default function Create({ customers }: Props) {
     const [type, setType] = useState<'expense' | 'income'>('expense');
 
-    const expenseForm = useForm<OperationFormData>(
-        createFormData('expense'),
-    );
+    const expenseForm = useForm<OperationFormData>(createFormData('expense'));
 
-    const incomeForm = useForm<OperationFormData>(
-        createFormData('income'),
-    );
+    const incomeForm = useForm<OperationFormData>(createFormData('income'));
 
-    const activeForm =
-        type === 'expense'
-            ? expenseForm
-            : incomeForm;
+    const activeForm = type === 'expense' ? expenseForm : incomeForm;
 
     const submit = () => {
         activeForm.post('/operations', {
@@ -144,8 +135,7 @@ export default function Create({ customers }: Props) {
                                             id="operation_date"
                                             type="date"
                                             value={
-                                                activeForm.data
-                                                    .operation_date
+                                                activeForm.data.operation_date
                                             }
                                             onChange={(event) =>
                                                 activeForm.setData(
@@ -153,13 +143,12 @@ export default function Create({ customers }: Props) {
                                                     event.target.value,
                                                 )
                                             }
-                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         />
 
                                         <FormError
                                             message={
-                                                activeForm.errors
-                                                    .operation_date
+                                                activeForm.errors.operation_date
                                             }
                                         />
                                     </div>
@@ -174,34 +163,24 @@ export default function Create({ customers }: Props) {
 
                                         <select
                                             id="currency"
-                                            value={
-                                                activeForm.data.currency
-                                            }
+                                            value={activeForm.data.currency}
                                             onChange={(event) =>
                                                 activeForm.setData(
                                                     'currency',
                                                     event.target.value,
                                                 )
                                             }
-                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         >
-                                            <option value="AZN">
-                                                AZN (₼)
-                                            </option>
+                                            <option value="AZN">AZN (₼)</option>
 
-                                            <option value="USD">
-                                                USD ($)
-                                            </option>
+                                            <option value="USD">USD ($)</option>
 
-                                            <option value="EUR">
-                                                EUR (€)
-                                            </option>
+                                            <option value="EUR">EUR (€)</option>
                                         </select>
 
                                         <FormError
-                                            message={
-                                                activeForm.errors.currency
-                                            }
+                                            message={activeForm.errors.currency}
                                         />
                                     </div>
                                 </div>
@@ -227,7 +206,7 @@ export default function Create({ customers }: Props) {
                                             )
                                         }
                                         placeholder="0.00"
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                     />
 
                                     <FormError
@@ -246,9 +225,7 @@ export default function Create({ customers }: Props) {
                                     <input
                                         id="category"
                                         type="text"
-                                        value={
-                                            activeForm.data.category
-                                        }
+                                        value={activeForm.data.category}
                                         onChange={(event) =>
                                             activeForm.setData(
                                                 'category',
@@ -260,13 +237,11 @@ export default function Create({ customers }: Props) {
                                                 ? 'Rent, Office, Utilities...'
                                                 : 'Service, Product, Salary...'
                                         }
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                     />
 
                                     <FormError
-                                        message={
-                                            activeForm.errors.category
-                                        }
+                                        message={activeForm.errors.category}
                                     />
                                 </div>
 
@@ -280,20 +255,16 @@ export default function Create({ customers }: Props) {
 
                                     <select
                                         id="customer_id"
-                                        value={
-                                            activeForm.data.customer_id
-                                        }
+                                        value={activeForm.data.customer_id}
                                         onChange={(event) =>
                                             activeForm.setData(
                                                 'customer_id',
                                                 event.target.value,
                                             )
                                         }
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                     >
-                                        <option value="">
-                                            No customer
-                                        </option>
+                                        <option value="">No customer</option>
 
                                         {customers.map((customer) => (
                                             <option
@@ -306,9 +277,7 @@ export default function Create({ customers }: Props) {
                                     </select>
 
                                     <FormError
-                                        message={
-                                            activeForm.errors.customer_id
-                                        }
+                                        message={activeForm.errors.customer_id}
                                     />
                                 </div>
                             </div>
@@ -337,9 +306,7 @@ export default function Create({ customers }: Props) {
                                     <input
                                         id="description"
                                         type="text"
-                                        value={
-                                            activeForm.data.description
-                                        }
+                                        value={activeForm.data.description}
                                         onChange={(event) =>
                                             activeForm.setData(
                                                 'description',
@@ -351,13 +318,11 @@ export default function Create({ customers }: Props) {
                                                 ? 'Office rent'
                                                 : 'Website development'
                                         }
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                     />
 
                                     <FormError
-                                        message={
-                                            activeForm.errors.description
-                                        }
+                                        message={activeForm.errors.description}
                                     />
                                 </div>
 
@@ -380,7 +345,7 @@ export default function Create({ customers }: Props) {
                                             )
                                         }
                                         placeholder="Additional notes..."
-                                        className="mt-2 w-full resize-none rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                        className="mt-2 w-full resize-none rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                     />
 
                                     <FormError

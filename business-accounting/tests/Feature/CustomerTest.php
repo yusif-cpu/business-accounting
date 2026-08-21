@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Business;
+use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -53,7 +54,7 @@ class CustomerTest extends TestCase
             'business_id' => $businessA->id,
         ]);
 
-        $customerB = \App\Models\Customer::create([
+        $customerB = Customer::create([
             'business_id' => $businessB->id,
             'name' => 'John Doe',
             'email' => 'john@example.com',
@@ -91,7 +92,7 @@ class CustomerTest extends TestCase
             'business_id' => $businessA->id,
         ]);
 
-        $customerB = \App\Models\Customer::create([
+        $customerB = Customer::create([
             'business_id' => $businessB->id,
             'name' => 'Customer B',
             'email' => 'customerb@example.com',

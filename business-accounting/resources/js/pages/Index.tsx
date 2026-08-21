@@ -19,10 +19,7 @@ export default function Index({ sales }: Props) {
 
                 <div className="mt-6 space-y-3">
                     {sales.map((sale) => (
-                        <div
-                            key={sale.id}
-                            className="rounded-lg border p-4"
-                        >
+                        <div key={sale.id} className="rounded-lg border p-4">
                             <p>Sale #{sale.id}</p>
                             <p>Amount: {sale.amount}</p>
                             <p>Status: {sale.status}</p>

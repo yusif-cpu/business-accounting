@@ -6,7 +6,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
 class Sale extends Model
 {
     protected $fillable = [
@@ -15,20 +14,20 @@ class Sale extends Model
         'external_id',
         'amount',
         'status',
-        'sold_at'
+        'sold_at',
     ];
 
     protected $casts = [
         'sold_at' => 'datetime',
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
     ];
 
-    public function business(): belongsTo
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }
 
-    public function customer(): belongsTo
+    public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
     }

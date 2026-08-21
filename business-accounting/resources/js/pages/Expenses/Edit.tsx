@@ -1,6 +1,6 @@
-import AppLayout from '@/layouts/app-layout';
-import FormError from '@/components/form-error';
 import { useForm } from '@inertiajs/react';
+import FormError from '@/components/form-error';
+import AppLayout from '@/layouts/app-layout';
 
 type Expense = {
     id: number;
@@ -75,7 +75,7 @@ export default function Edit({ expense }: Props) {
                                             event.target.value,
                                         )
                                     }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
                                 <FormError message={errors.description} />
@@ -96,12 +96,9 @@ export default function Edit({ expense }: Props) {
                                     min="0.01"
                                     value={data.amount}
                                     onChange={(event) =>
-                                        setData(
-                                            'amount',
-                                            event.target.value,
-                                        )
+                                        setData('amount', event.target.value)
                                     }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
                                 <FormError message={errors.amount} />
@@ -120,12 +117,9 @@ export default function Edit({ expense }: Props) {
                                     type="text"
                                     value={data.category}
                                     onChange={(event) =>
-                                        setData(
-                                            'category',
-                                            event.target.value,
-                                        )
+                                        setData('category', event.target.value)
                                     }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
                                 <FormError message={errors.category} />
@@ -149,12 +143,10 @@ export default function Edit({ expense }: Props) {
                                             event.target.value,
                                         )
                                     }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
-                                <FormError
-                                    message={errors.expense_date}
-                                />
+                                <FormError message={errors.expense_date} />
                             </div>
 
                             <div className="flex justify-end gap-3 border-t border-neutral-800 pt-5">
@@ -170,9 +162,7 @@ export default function Edit({ expense }: Props) {
                                     disabled={processing}
                                     className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white disabled:opacity-50"
                                 >
-                                    {processing
-                                        ? 'Saving...'
-                                        : 'Save Changes'}
+                                    {processing ? 'Saving...' : 'Save Changes'}
                                 </button>
                             </div>
                         </form>

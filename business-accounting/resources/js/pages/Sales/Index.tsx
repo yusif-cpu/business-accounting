@@ -1,7 +1,7 @@
-import AppLayout from '@/layouts/app-layout';
-import DeleteConfirmation from '@/components/delete-confirmation';
 import { Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import DeleteConfirmation from '@/components/delete-confirmation';
+import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatMoney } from '@/lib/formatters';
 
 type Sale = {
@@ -36,7 +36,7 @@ function StatusBadge({ status }: { status: string }) {
         <span
             className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${
                 styles[status] ??
-                'bg-neutral-800 text-neutral-300 border-neutral-700'
+                'border-neutral-700 bg-neutral-800 text-neutral-300'
             }`}
         >
             {status}
@@ -76,8 +76,7 @@ export default function Index({ sales }: Props) {
                             </h1>
 
                             <p className="mt-2 text-sm text-neutral-400">
-                                Manage sales, payments and outstanding
-                                balances.
+                                Manage sales, payments and outstanding balances.
                             </p>
                         </div>
 
@@ -141,8 +140,7 @@ export default function Index({ sales }: Props) {
                                                 );
 
                                                 const remaining =
-                                                    Number(sale.amount) -
-                                                    paid;
+                                                    Number(sale.amount) - paid;
 
                                                 return (
                                                     <tr

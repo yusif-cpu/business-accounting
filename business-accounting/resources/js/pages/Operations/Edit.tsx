@@ -1,7 +1,7 @@
-import AppLayout from '@/layouts/app-layout';
-import FormError from '@/components/form-error';
 import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
+import FormError from '@/components/form-error';
+import AppLayout from '@/layouts/app-layout';
 
 type Customer = {
     id: number;
@@ -25,31 +25,19 @@ type Props = {
     customers: Customer[];
 };
 
-export default function Edit({
-    operation,
-    customers,
-}: Props) {
-    const {
-        data,
-        setData,
-        put,
-        processing,
-        errors,
-    } = useForm({
+export default function Edit({ operation, customers }: Props) {
+    const { data, setData, put, processing, errors } = useForm({
         type: operation.type,
         operation_date: operation.operation_date.slice(0, 10),
         currency: operation.currency,
         amount: operation.amount,
         category: operation.category ?? '',
-        customer_id:
-            operation.customer_id?.toString() ?? '',
+        customer_id: operation.customer_id?.toString() ?? '',
         description: operation.description,
         note: operation.note ?? '',
     });
 
-    const submit = (
-        event: FormEvent<HTMLFormElement>,
-    ) => {
+    const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
 
         put(`/operations/${operation.id}`);
@@ -84,19 +72,11 @@ export default function Edit({
                         </div>
                     </div>
 
-                    <form
-                        onSubmit={submit}
-                        className="space-y-6"
-                    >
+                    <form onSubmit={submit} className="space-y-6">
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setData(
-                                        'type',
-                                        'expense',
-                                    )
-                                }
+                                onClick={() => setData('type', 'expense')}
                                 className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                     !isIncome
                                         ? 'border-red-500/30 bg-red-500/10 text-red-400'
@@ -108,12 +88,7 @@ export default function Edit({
 
                             <button
                                 type="button"
-                                onClick={() =>
-                                    setData(
-                                        'type',
-                                        'income',
-                                    )
-                                }
+                                onClick={() => setData('type', 'income')}
                                 className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                     isIncome
                                         ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
@@ -149,22 +124,18 @@ export default function Edit({
                                             <input
                                                 id="operation_date"
                                                 type="date"
-                                                value={
-                                                    data.operation_date
-                                                }
+                                                value={data.operation_date}
                                                 onChange={(event) =>
                                                     setData(
                                                         'operation_date',
                                                         event.target.value,
                                                     )
                                                 }
-                                                className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                                className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                             />
 
                                             <FormError
-                                                message={
-                                                    errors.operation_date
-                                                }
+                                                message={errors.operation_date}
                                             />
                                         </div>
 
@@ -185,7 +156,7 @@ export default function Edit({
                                                         event.target.value,
                                                     )
                                                 }
-                                                className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                                className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                             >
                                                 <option value="AZN">
                                                     AZN (₼)
@@ -222,12 +193,10 @@ export default function Edit({
                                                     event.target.value,
                                                 )
                                             }
-                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         />
 
-                                        <FormError
-                                            message={errors.amount}
-                                        />
+                                        <FormError message={errors.amount} />
                                     </div>
 
                                     <div>
@@ -247,12 +216,10 @@ export default function Edit({
                                                     event.target.value,
                                                 )
                                             }
-                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         />
 
-                                        <FormError
-                                            message={errors.category}
-                                        />
+                                        <FormError message={errors.category} />
                                     </div>
 
                                     <div>
@@ -265,16 +232,14 @@ export default function Edit({
 
                                         <select
                                             id="customer_id"
-                                            value={
-                                                data.customer_id
-                                            }
+                                            value={data.customer_id}
                                             onChange={(event) =>
                                                 setData(
                                                     'customer_id',
                                                     event.target.value,
                                                 )
                                             }
-                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         >
                                             <option value="">
                                                 No customer
@@ -291,9 +256,7 @@ export default function Edit({
                                         </select>
 
                                         <FormError
-                                            message={
-                                                errors.customer_id
-                                            }
+                                            message={errors.customer_id}
                                         />
                                     </div>
                                 </div>
@@ -321,22 +284,18 @@ export default function Edit({
 
                                         <input
                                             id="description"
-                                            value={
-                                                data.description
-                                            }
+                                            value={data.description}
                                             onChange={(event) =>
                                                 setData(
                                                     'description',
                                                     event.target.value,
                                                 )
                                             }
-                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         />
 
                                         <FormError
-                                            message={
-                                                errors.description
-                                            }
+                                            message={errors.description}
                                         />
                                     </div>
 
@@ -358,12 +317,10 @@ export default function Edit({
                                                     event.target.value,
                                                 )
                                             }
-                                            className="mt-2 w-full resize-none rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                            className="mt-2 w-full resize-none rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         />
 
-                                        <FormError
-                                            message={errors.note}
-                                        />
+                                        <FormError message={errors.note} />
                                     </div>
 
                                     <div className="flex items-center justify-between border-t border-neutral-800 pt-5">

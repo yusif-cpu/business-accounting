@@ -16,8 +16,7 @@ class OperationController extends Controller
 {
     public function __construct(
         private OperationService $operationService
-    ) {
-    }
+    ) {}
 
     public function index(): Response
     {

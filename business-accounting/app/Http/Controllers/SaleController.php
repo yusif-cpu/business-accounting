@@ -16,8 +16,7 @@ class SaleController extends Controller
 {
     public function __construct(
         private SaleService $saleService
-    ) {
-    }
+    ) {}
 
     public function index(): Response
     {

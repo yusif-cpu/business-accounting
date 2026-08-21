@@ -1,7 +1,7 @@
-import AppLayout from '@/layouts/app-layout';
-import DeleteConfirmation from '@/components/delete-confirmation';
 import { Link, useForm } from '@inertiajs/react';
 import { useState } from 'react';
+import DeleteConfirmation from '@/components/delete-confirmation';
+import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatMoney } from '@/lib/formatters';
 
 type Customer = {
@@ -128,100 +128,104 @@ export default function Index({ operations }: Props) {
                                         </thead>
 
                                         <tbody className="divide-y divide-neutral-800">
-                                            {operations.data.map((operation) => (
-                                                <tr
-                                                    key={operation.id}
-                                                    className="transition hover:bg-neutral-800/30"
-                                                >
-                                                    <td className="px-5 py-4">
-                                                        <span
-                                                            className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${
+                                            {operations.data.map(
+                                                (operation) => (
+                                                    <tr
+                                                        key={operation.id}
+                                                        className="transition hover:bg-neutral-800/30"
+                                                    >
+                                                        <td className="px-5 py-4">
+                                                            <span
+                                                                className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${
+                                                                    operation.type ===
+                                                                    'income'
+                                                                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
+                                                                        : 'border-red-500/20 bg-red-500/10 text-red-400'
+                                                                }`}
+                                                            >
+                                                                {operation.type}
+                                                            </span>
+                                                        </td>
+
+                                                        <td className="px-5 py-4">
+                                                            <p className="font-medium text-neutral-100">
+                                                                {
+                                                                    operation.description
+                                                                }
+                                                            </p>
+
+                                                            <p className="text-xs text-neutral-500">
+                                                                Operation #
+                                                                {operation.id}
+                                                            </p>
+                                                        </td>
+
+                                                        <td className="px-5 py-4 text-neutral-400">
+                                                            {operation.category ??
+                                                                '—'}
+                                                        </td>
+
+                                                        <td className="px-5 py-4 text-neutral-400">
+                                                            {operation.customer
+                                                                ?.name ?? '—'}
+                                                        </td>
+
+                                                        <td
+                                                            className={`px-5 py-4 font-semibold ${
                                                                 operation.type ===
                                                                 'income'
-                                                                    ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-                                                                    : 'border-red-500/20 bg-red-500/10 text-red-400'
+                                                                    ? 'text-emerald-400'
+                                                                    : 'text-red-400'
                                                             }`}
                                                         >
-                                                            {operation.type}
-                                                        </span>
-                                                    </td>
+                                                            {formatMoney(
+                                                                operation.amount,
+                                                            )}{' '}
+                                                            {operation.currency}
+                                                        </td>
 
-                                                    <td className="px-5 py-4">
-                                                        <p className="font-medium text-neutral-100">
-                                                            {operation.description}
-                                                        </p>
+                                                        <td className="px-5 py-4 text-neutral-400">
+                                                            {formatDate(
+                                                                operation.operation_date,
+                                                                true,
+                                                            )}
+                                                        </td>
 
-                                                        <p className="text-xs text-neutral-500">
-                                                            Operation #
-                                                            {operation.id}
-                                                        </p>
-                                                    </td>
+                                                        <td className="px-5 py-4">
+                                                            <div className="flex justify-end gap-4">
+                                                                <Link
+                                                                    href={`/operations/${operation.id}`}
+                                                                    className="text-neutral-300 transition hover:text-white"
+                                                                >
+                                                                    View
+                                                                </Link>
 
-                                                    <td className="px-5 py-4 text-neutral-400">
-                                                        {operation.category ??
-                                                            '—'}
-                                                    </td>
+                                                                <Link
+                                                                    href={`/operations/${operation.id}/edit`}
+                                                                    className="text-blue-400 transition hover:text-blue-300"
+                                                                >
+                                                                    Edit
+                                                                </Link>
 
-                                                    <td className="px-5 py-4 text-neutral-400">
-                                                        {operation.customer
-                                                            ?.name ?? '—'}
-                                                    </td>
-
-                                                    <td
-                                                        className={`px-5 py-4 font-semibold ${
-                                                            operation.type ===
-                                                            'income'
-                                                                ? 'text-emerald-400'
-                                                                : 'text-red-400'
-                                                        }`}
-                                                    >
-                                                        {formatMoney(
-                                                            operation.amount,
-                                                        )}{' '}
-                                                        {operation.currency}
-                                                    </td>
-
-                                                    <td className="px-5 py-4 text-neutral-400">
-                                                        {formatDate(
-                                                            operation.operation_date,
-                                                            true,
-                                                        )}
-                                                    </td>
-
-                                                    <td className="px-5 py-4">
-                                                        <div className="flex justify-end gap-4">
-                                                            <Link
-                                                                href={`/operations/${operation.id}`}
-                                                                className="text-neutral-300 transition hover:text-white"
-                                                            >
-                                                                View
-                                                            </Link>
-
-                                                            <Link
-                                                                href={`/operations/${operation.id}/edit`}
-                                                                className="text-blue-400 transition hover:text-blue-300"
-                                                            >
-                                                                Edit
-                                                            </Link>
-
-                                                            <button
-                                                                type="button"
-                                                                disabled={
-                                                                    processing
-                                                                }
-                                                                onClick={() =>
-                                                                    setDeleteId(
-                                                                        operation.id,
-                                                                    )
-                                                                }
-                                                                className="text-red-400 transition hover:text-red-300 disabled:opacity-50"
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={
+                                                                        processing
+                                                                    }
+                                                                    onClick={() =>
+                                                                        setDeleteId(
+                                                                            operation.id,
+                                                                        )
+                                                                    }
+                                                                    className="text-red-400 transition hover:text-red-300 disabled:opacity-50"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>

@@ -27,16 +27,7 @@ export function formatDate(
 
         return new Intl.DateTimeFormat('en-US', {
             dateStyle: 'medium',
-        }).format(
-            new Date(
-                year,
-                month - 1,
-                day,
-                12,
-                0,
-                0,
-            ),
-        );
+        }).format(new Date(year, month - 1, day, 12, 0, 0));
     }
 
     const date = new Date(value);

@@ -12,12 +12,12 @@ class Expense extends Model
         'description',
         'amount',
         'category',
-        'expense_date'
+        'expense_date',
     ];
 
     protected $casts = [
         'expense_date' => 'date',
-        'amount' => 'decimal:2'
+        'amount' => 'decimal:2',
     ];
 
     public function business(): BelongsTo

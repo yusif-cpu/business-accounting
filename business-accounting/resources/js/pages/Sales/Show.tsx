@@ -1,6 +1,6 @@
+import { Link, useForm } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatMoney } from '@/lib/formatters';
-import { Link, useForm } from '@inertiajs/react';
 
 type Customer = {
     id: number;
@@ -40,7 +40,7 @@ function StatusBadge({ status }: { status: string }) {
         <span
             className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${
                 styles[status] ??
-                'bg-neutral-800 text-neutral-300 border-neutral-700'
+                'border-neutral-700 bg-neutral-800 text-neutral-300'
             }`}
         >
             {status}
@@ -87,8 +87,7 @@ export default function Show({ sale }: Props) {
                                 </div>
 
                                 <p className="mt-2 text-sm text-neutral-500">
-                                    Created on{' '}
-                                    {formatDate(sale.sold_at)}
+                                    Created on {formatDate(sale.sold_at)}
                                 </p>
                             </div>
 
@@ -122,9 +121,7 @@ export default function Show({ sale }: Props) {
                         </div>
 
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-                            <p className="text-sm text-neutral-500">
-                                Paid
-                            </p>
+                            <p className="text-sm text-neutral-500">Paid</p>
 
                             <p className="mt-2 text-2xl font-semibold text-emerald-400">
                                 {formatMoney(totalPaid)}
@@ -142,9 +139,7 @@ export default function Show({ sale }: Props) {
                         </div>
 
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-                            <p className="text-sm text-neutral-500">
-                                Payments
-                            </p>
+                            <p className="text-sm text-neutral-500">Payments</p>
 
                             <p className="mt-2 text-2xl font-semibold">
                                 {sale.payments.length}
@@ -154,9 +149,7 @@ export default function Show({ sale }: Props) {
 
                     <div className="grid gap-6 lg:grid-cols-3">
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-                            <h2 className="font-semibold">
-                                Customer
-                            </h2>
+                            <h2 className="font-semibold">Customer</h2>
 
                             {sale.customer ? (
                                 <div className="mt-6">
@@ -173,8 +166,7 @@ export default function Show({ sale }: Props) {
                                             </p>
 
                                             <p className="text-xs text-neutral-500">
-                                                Customer #
-                                                {sale.customer.id}
+                                                Customer #{sale.customer.id}
                                             </p>
                                         </div>
                                     </div>

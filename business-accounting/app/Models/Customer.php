@@ -12,10 +12,10 @@ class Customer extends Model
         'business_id',
         'name',
         'email',
-        'phone'
+        'phone',
     ];
 
-    public function business(): belongsTo
+    public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
     }

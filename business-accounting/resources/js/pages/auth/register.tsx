@@ -1,4 +1,3 @@
-import AuthLayout from '@/layouts/auth-layout';
 import { Form, Head } from '@inertiajs/react';
 
 import InputError from '@/components/input-error';
@@ -8,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Spinner } from '@/components/ui/spinner';
+import AuthLayout from '@/layouts/auth-layout';
 
 import register from '@/routes/register';
 
@@ -21,10 +21,7 @@ export default function Register() {
 
             <Form
                 {...register.store.form()}
-                resetOnSuccess={[
-                    'password',
-                    'password_confirmation',
-                ]}
+                resetOnSuccess={['password', 'password_confirmation']}
                 className="flex flex-col gap-6"
             >
                 {({ processing, errors }) => (
@@ -46,15 +43,11 @@ export default function Register() {
                                     placeholder="My Business"
                                 />
 
-                                <InputError
-                                    message={errors.business_name}
-                                />
+                                <InputError message={errors.business_name} />
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="name">
-                                    Your name
-                                </Label>
+                                <Label htmlFor="name">Your name</Label>
 
                                 <Input
                                     id="name"
@@ -70,9 +63,7 @@ export default function Register() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="email">
-                                    Email address
-                                </Label>
+                                <Label htmlFor="email">Email address</Label>
 
                                 <Input
                                     id="email"
@@ -88,9 +79,7 @@ export default function Register() {
                             </div>
 
                             <div className="grid gap-2">
-                                <Label htmlFor="password">
-                                    Password
-                                </Label>
+                                <Label htmlFor="password">Password</Label>
 
                                 <PasswordInput
                                     id="password"
@@ -119,9 +108,7 @@ export default function Register() {
                                 />
 
                                 <InputError
-                                    message={
-                                        errors.password_confirmation
-                                    }
+                                    message={errors.password_confirmation}
                                 />
                             </div>
 
@@ -141,10 +128,7 @@ export default function Register() {
 
                         <div className="text-center text-sm text-muted-foreground">
                             Already have an account?{' '}
-                            <TextLink
-                                href="/login"
-                                tabIndex={7}
-                            >
+                            <TextLink href="/login" tabIndex={7}>
                                 Log in
                             </TextLink>
                         </div>

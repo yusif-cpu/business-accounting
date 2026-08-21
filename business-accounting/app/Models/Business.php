@@ -9,7 +9,6 @@ class Business extends Model
 {
     protected $fillable = ['business_name'];
 
-
     public function customers(): HasMany
     {
         return $this->hasMany(Customer::class);

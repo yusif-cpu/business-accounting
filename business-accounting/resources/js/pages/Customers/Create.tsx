@@ -1,6 +1,6 @@
-import AppLayout from '@/layouts/app-layout';
-import FormError from '@/components/form-error';
 import { useForm } from '@inertiajs/react';
+import FormError from '@/components/form-error';
+import AppLayout from '@/layouts/app-layout';
 
 export default function Create() {
     const { data, setData, post, processing, errors } = useForm({
@@ -60,7 +60,7 @@ export default function Create() {
                                         setData('name', event.target.value)
                                     }
                                     placeholder="John Doe"
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
                                 <FormError message={errors.name} />
@@ -82,7 +82,7 @@ export default function Create() {
                                         setData('email', event.target.value)
                                     }
                                     placeholder="john@example.com"
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
                                 <FormError message={errors.email} />
@@ -104,7 +104,7 @@ export default function Create() {
                                         setData('phone', event.target.value)
                                     }
                                     placeholder="+994..."
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
                                 <FormError message={errors.phone} />

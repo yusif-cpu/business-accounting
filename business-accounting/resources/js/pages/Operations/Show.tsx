@@ -1,6 +1,6 @@
+import { Link } from '@inertiajs/react';
 import AppLayout from '@/layouts/app-layout';
 import { formatDate, formatMoney } from '@/lib/formatters';
-import { Link } from '@inertiajs/react';
 
 type Customer = {
     id: number;
@@ -60,10 +60,7 @@ export default function Show({ operation }: Props) {
 
                                 <p className="mt-2 text-sm text-neutral-500">
                                     Recorded on{' '}
-                                    {formatDate(
-                                        operation.operation_date,
-                                        true,
-                                    )}
+                                    {formatDate(operation.operation_date, true)}
                                 </p>
                             </div>
 
@@ -110,22 +107,15 @@ export default function Show({ operation }: Props) {
 
                     <div className="grid gap-4 sm:grid-cols-3">
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-                            <p className="text-sm text-neutral-500">
-                                Date
-                            </p>
+                            <p className="text-sm text-neutral-500">Date</p>
 
                             <p className="mt-2 font-medium text-neutral-100">
-                                {formatDate(
-                                    operation.operation_date,
-                                    true,
-                                )}
+                                {formatDate(operation.operation_date, true)}
                             </p>
                         </div>
 
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-                            <p className="text-sm text-neutral-500">
-                                Category
-                            </p>
+                            <p className="text-sm text-neutral-500">Category</p>
 
                             <p className="mt-2 font-medium text-neutral-100">
                                 {operation.category ?? 'No category'}
@@ -133,9 +123,7 @@ export default function Show({ operation }: Props) {
                         </div>
 
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-                            <p className="text-sm text-neutral-500">
-                                Currency
-                            </p>
+                            <p className="text-sm text-neutral-500">Currency</p>
 
                             <p className="mt-2 font-medium text-neutral-100">
                                 {operation.currency}
@@ -170,7 +158,7 @@ export default function Show({ operation }: Props) {
                                     </p>
 
                                     <div className="mt-2 rounded-xl border border-neutral-800 bg-neutral-950 p-4">
-                                        <p className="whitespace-pre-wrap leading-7 text-neutral-400">
+                                        <p className="leading-7 whitespace-pre-wrap text-neutral-400">
                                             {operation.note}
                                         </p>
                                     </div>

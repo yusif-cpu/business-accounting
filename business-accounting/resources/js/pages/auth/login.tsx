@@ -1,6 +1,7 @@
 import { Form, Head } from '@inertiajs/react';
 
 import InputError from '@/components/input-error';
+import PasskeyVerify from '@/components/passkey-verify';
 import PasswordInput from '@/components/password-input';
 import TextLink from '@/components/text-link';
 import { Button } from '@/components/ui/button';
@@ -13,10 +14,6 @@ import { register } from '@/routes';
 import { store } from '@/routes/login';
 import { request } from '@/routes/password';
 
-/* @chisel-passkeys */
-import PasskeyVerify from '@/components/passkey-verify';
-/* @end-chisel-passkeys */
-
 type Props = {
     status?: string;
     canResetPassword: boolean;
@@ -27,9 +24,7 @@ export default function Login({ status, canResetPassword }: Props) {
         <>
             <Head title="Log in" />
 
-            {/* @chisel-passkeys */}
             <PasskeyVerify />
-            {/* @end-chisel-passkeys */}
 
             <Form
                 {...store.form()}
@@ -40,9 +35,7 @@ export default function Login({ status, canResetPassword }: Props) {
                     <>
                         <div className="grid gap-5">
                             <div className="grid gap-2">
-                                <Label htmlFor="email">
-                                    Email address
-                                </Label>
+                                <Label htmlFor="email">Email address</Label>
 
                                 <Input
                                     id="email"
@@ -60,9 +53,7 @@ export default function Login({ status, canResetPassword }: Props) {
 
                             <div className="grid gap-2">
                                 <div className="flex items-center justify-between">
-                                    <Label htmlFor="password">
-                                        Password
-                                    </Label>
+                                    <Label htmlFor="password">Password</Label>
 
                                     {canResetPassword && (
                                         <TextLink
@@ -84,9 +75,7 @@ export default function Login({ status, canResetPassword }: Props) {
                                     placeholder="Enter your password"
                                 />
 
-                                <InputError
-                                    message={errors.password}
-                                />
+                                <InputError message={errors.password} />
                             </div>
 
                             <div className="flex items-center space-x-3">
