@@ -34,10 +34,14 @@ type Props = {
     categories: Category[];
 };
 
-function createFormData(type: 'expense' | 'income'): OperationFormData {
+function createFormData(
+    type: 'expense' | 'income',
+): OperationFormData {
     return {
         type,
-        operation_date: new Date().toISOString().slice(0, 10),
+        operation_date: new Date()
+            .toISOString()
+            .slice(0, 10),
         currency: 'AZN',
         amount: '',
         category_id: '',
@@ -47,49 +51,269 @@ function createFormData(type: 'expense' | 'income'): OperationFormData {
     };
 }
 
-export default function Create({ customers, categories }: Props) {
-    const [type, setType] = useState<'expense' | 'income'>('expense');
+export default function Create({
+    customers,
+    categories,
+}: Props) {
+    const [type, setType] = useState<
+        'expense' | 'income'
+    >('expense');
 
+    const [showCategoryModal, setShowCategoryModal] =
+        useState(false);
+
+    const [newCategoryName, setNewCategoryName] =
+        useState('');
+
+    const [categoryCreating, setCategoryCreating] =
+        useState(false);
+
+    const [categoryError, setCategoryError] =
+        useState('');
+
+    const [localCategories, setLocalCategories] =
+        useState<Category[]>(categories);
+
+    /*
+     * EXPENSE FORM
+     */
     const expenseForm = useForm<OperationFormData>(
         createFormData('expense'),
     );
 
+    /*
+     * INCOME FORM
+     */
     const incomeForm = useForm<OperationFormData>(
         createFormData('income'),
     );
 
-    const activeForm = type === 'expense' ? expenseForm : incomeForm;
+    /*
+     * Current form məlumatları
+     */
+    const currentData =
+        type === 'expense'
+            ? expenseForm.data
+            : incomeForm.data;
 
-    const filteredCategories = categories.filter(
-        (category) => category.type === type,
-    );
+    const currentErrors =
+        type === 'expense'
+            ? expenseForm.errors
+            : incomeForm.errors;
 
-    const submit = () => {
-        activeForm
-            .transform((data) => ({
-                ...data,
-                operation_date: parseInputDate(
-                    formatInputDate(data.operation_date),
-                ),
-            }))
-            .post('/operations', {
-                preserveState: true,
-                preserveScroll: true,
+    const currentProcessing =
+        type === 'expense'
+            ? expenseForm.processing
+            : incomeForm.processing;
 
-                onSuccess: () => {
-                    activeForm.reset();
-                },
-            });
+    const currentSetData =
+        type === 'expense'
+            ? expenseForm.setData
+            : incomeForm.setData;
+
+    const filteredCategories =
+        localCategories.filter(
+            (category) => category.type === type,
+        );
+
+    /*
+     * Expense / Income dəyişməsi
+     *
+     * Hər form öz məlumatını saxlayır.
+     */
+    const changeType = (
+        newType: 'expense' | 'income',
+    ) => {
+        setType(newType);
     };
 
-    const changeType = (newType: 'expense' | 'income') => {
-        setType(newType);
+    /*
+     * Date
+     */
+    const handleDateChange = (value: string) => {
+        const numbers = value
+            .replace(/\D/g, '')
+            .slice(0, 8);
+
+        let formatted = numbers;
+
+        if (numbers.length > 2) {
+            formatted =
+                numbers.slice(0, 2) +
+                '/' +
+                numbers.slice(2);
+        }
+
+        if (numbers.length > 4) {
+            formatted =
+                numbers.slice(0, 2) +
+                '/' +
+                numbers.slice(2, 4) +
+                '/' +
+                numbers.slice(4);
+        }
+
+        currentSetData(
+            'operation_date',
+            parseInputDate(formatted),
+        );
+    };
+
+    /*
+     * Inline category yaratmaq
+     */
+    const createCategory = async () => {
+        const name = newCategoryName.trim();
+
+        if (!name) {
+            setCategoryError(
+                'Category name is required.',
+            );
+
+            return;
+        }
+
+        setCategoryCreating(true);
+        setCategoryError('');
+
+        try {
+            const token = document
+                .querySelector(
+                    'meta[name="csrf-token"]',
+                )
+                ?.getAttribute('content');
+
+            const response = await fetch(
+                '/categories/inline',
+                {
+                    method: 'POST',
+
+                    headers: {
+                        'Content-Type':
+                            'application/json',
+
+                        Accept: 'application/json',
+
+                        ...(token
+                            ? {
+                                  'X-CSRF-TOKEN':
+                                      token,
+                              }
+                            : {}),
+                    },
+
+                    credentials: 'same-origin',
+
+                    body: JSON.stringify({
+                        name,
+                        type,
+                    }),
+                },
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setCategoryError(
+                    result.message ??
+                        'Unable to create category.',
+                );
+
+                return;
+            }
+
+            const createdCategory =
+                result.category as Category;
+
+            setLocalCategories((current) => [
+                ...current,
+                createdCategory,
+            ]);
+
+            currentSetData(
+                'category_id',
+                String(createdCategory.id),
+            );
+
+            setNewCategoryName('');
+            setShowCategoryModal(false);
+        } catch {
+            setCategoryError(
+                'Unable to create category.',
+            );
+        } finally {
+            setCategoryCreating(false);
+        }
+    };
+
+    /*
+     * Expense submit
+     */
+    const submitExpense = () => {
+        expenseForm.post('/operations', {
+            transform: (formData) => ({
+                ...formData,
+
+                operation_date:
+                    parseInputDate(
+                        formatInputDate(
+                            formData.operation_date,
+                        ),
+                    ),
+            }),
+
+            preserveState: true,
+            preserveScroll: true,
+
+            onSuccess: () => {
+                expenseForm.reset();
+            },
+        });
+    };
+
+    /*
+     * Income submit
+     */
+    const submitIncome = () => {
+        incomeForm.post('/operations', {
+            transform: (formData) => ({
+                ...formData,
+
+                operation_date:
+                    parseInputDate(
+                        formatInputDate(
+                            formData.operation_date,
+                        ),
+                    ),
+            }),
+
+            preserveState: true,
+            preserveScroll: true,
+
+            onSuccess: () => {
+                incomeForm.reset();
+            },
+        });
+    };
+
+    /*
+     * Submit
+     */
+    const submit = () => {
+        if (type === 'expense') {
+            submitExpense();
+        } else {
+            submitIncome();
+        }
     };
 
     return (
         <AppLayout>
-            <div className="bg-neutral-950 p-6 text-neutral-100">
+            <div className="min-h-full bg-neutral-950 p-6 text-neutral-100">
                 <div className="mx-auto max-w-7xl space-y-6">
+
+                    {/* HEADER */}
+
                     <div>
                         <a
                             href="/operations"
@@ -113,10 +337,14 @@ export default function Create({ customers, categories }: Props) {
                         </div>
                     </div>
 
+                    {/* TYPE */}
+
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             type="button"
-                            onClick={() => changeType('expense')}
+                            onClick={() =>
+                                changeType('expense')
+                            }
                             className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                 type === 'expense'
                                     ? 'border-red-500/30 bg-red-500/10 text-red-400'
@@ -128,7 +356,9 @@ export default function Create({ customers, categories }: Props) {
 
                         <button
                             type="button"
-                            onClick={() => changeType('income')}
+                            onClick={() =>
+                                changeType('income')
+                            }
                             className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                 type === 'income'
                                     ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
@@ -139,8 +369,14 @@ export default function Create({ customers, categories }: Props) {
                         </button>
                     </div>
 
+                    {/* FORMS */}
+
                     <div className="grid gap-6 lg:grid-cols-2">
+
+                        {/* BASIC INFORMATION */}
+
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+
                             <div className="mb-6">
                                 <h2 className="text-base font-semibold">
                                     Basic information
@@ -152,7 +388,11 @@ export default function Create({ customers, categories }: Props) {
                             </div>
 
                             <div className="space-y-5">
+
+                                {/* DATE */}
+
                                 <div className="grid gap-4 sm:grid-cols-2">
+
                                     <div>
                                         <label
                                             htmlFor="operation_date"
@@ -168,47 +408,25 @@ export default function Create({ customers, categories }: Props) {
                                             placeholder="DD/MM/YYYY"
                                             maxLength={10}
                                             value={formatInputDate(
-                                                activeForm.data.operation_date,
+                                                currentData.operation_date,
                                             )}
-                                            onChange={(event) => {
-                                                const numbers =
-                                                    event.target.value
-                                                        .replace(/\D/g, '')
-                                                        .slice(0, 8);
-
-                                                let formatted = numbers;
-
-                                                if (numbers.length > 2) {
-                                                    formatted =
-                                                        numbers.slice(0, 2) +
-                                                        '/' +
-                                                        numbers.slice(2);
-                                                }
-
-                                                if (numbers.length > 4) {
-                                                    formatted =
-                                                        numbers.slice(0, 2) +
-                                                        '/' +
-                                                        numbers.slice(2, 4) +
-                                                        '/' +
-                                                        numbers.slice(4);
-                                                }
-
-                                                activeForm.setData(
-                                                    'operation_date',
-                                                    parseInputDate(formatted),
-                                                );
-                                            }}
-                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                            onChange={(event) =>
+                                                handleDateChange(
+                                                    event.target
+                                                        .value,
+                                                )
+                                            }
+                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                         />
 
                                         <FormError
                                             message={
-                                                activeForm.errors
-                                                    .operation_date
+                                                currentErrors.operation_date
                                             }
                                         />
                                     </div>
+
+                                    {/* CURRENCY */}
 
                                     <div>
                                         <label
@@ -220,14 +438,17 @@ export default function Create({ customers, categories }: Props) {
 
                                         <select
                                             id="currency"
-                                            value={activeForm.data.currency}
+                                            value={
+                                                currentData.currency
+                                            }
                                             onChange={(event) =>
-                                                activeForm.setData(
+                                                currentSetData(
                                                     'currency',
-                                                    event.target.value,
+                                                    event.target
+                                                        .value,
                                                 )
                                             }
-                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                            className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                         >
                                             <option value="AZN">
                                                 AZN (₼)
@@ -244,11 +465,14 @@ export default function Create({ customers, categories }: Props) {
 
                                         <FormError
                                             message={
-                                                activeForm.errors.currency
+                                                currentErrors.currency
                                             }
                                         />
                                     </div>
+
                                 </div>
+
+                                {/* AMOUNT */}
 
                                 <div>
                                     <label
@@ -263,21 +487,28 @@ export default function Create({ customers, categories }: Props) {
                                         type="number"
                                         step="0.01"
                                         min="0.01"
-                                        value={activeForm.data.amount}
+                                        value={
+                                            currentData.amount
+                                        }
                                         onChange={(event) =>
-                                            activeForm.setData(
+                                            currentSetData(
                                                 'amount',
-                                                event.target.value,
+                                                event.target
+                                                    .value,
                                             )
                                         }
                                         placeholder="0.00"
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     />
 
                                     <FormError
-                                        message={activeForm.errors.amount}
+                                        message={
+                                            currentErrors.amount
+                                        }
                                     />
                                 </div>
+
+                                {/* CATEGORY */}
 
                                 <div>
                                     <label
@@ -289,35 +520,64 @@ export default function Create({ customers, categories }: Props) {
 
                                     <select
                                         id="category_id"
-                                        value={activeForm.data.category_id}
+                                        value={
+                                            currentData.category_id
+                                        }
                                         onChange={(event) =>
-                                            activeForm.setData(
+                                            currentSetData(
                                                 'category_id',
-                                                event.target.value,
+                                                event.target
+                                                    .value,
                                             )
                                         }
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     >
                                         <option value="">
                                             Select category...
                                         </option>
 
-                                        {filteredCategories.map((category) => (
-                                            <option
-                                                key={category.id}
-                                                value={category.id}
-                                            >
-                                                {category.name}
-                                            </option>
-                                        ))}
+                                        {filteredCategories.map(
+                                            (category) => (
+                                                <option
+                                                    key={
+                                                        category.id
+                                                    }
+                                                    value={
+                                                        category.id
+                                                    }
+                                                >
+                                                    {
+                                                        category.name
+                                                    }
+                                                </option>
+                                            ),
+                                        )}
                                     </select>
+
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setCategoryError(
+                                                '',
+                                            );
+
+                                            setShowCategoryModal(
+                                                true,
+                                            );
+                                        }}
+                                        className="mt-2 text-sm font-medium text-blue-400 transition hover:text-blue-300"
+                                    >
+                                        + Create new category
+                                    </button>
 
                                     <FormError
                                         message={
-                                            activeForm.errors.category_id
+                                            currentErrors.category_id
                                         }
                                     />
                                 </div>
+
+                                {/* CUSTOMER */}
 
                                 <div>
                                     <label
@@ -329,37 +589,54 @@ export default function Create({ customers, categories }: Props) {
 
                                     <select
                                         id="customer_id"
-                                        value={activeForm.data.customer_id}
+                                        value={
+                                            currentData.customer_id
+                                        }
                                         onChange={(event) =>
-                                            activeForm.setData(
+                                            currentSetData(
                                                 'customer_id',
-                                                event.target.value,
+                                                event.target
+                                                    .value,
                                             )
                                         }
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     >
-                                        <option value="">No customer</option>
+                                        <option value="">
+                                            No customer
+                                        </option>
 
-                                        {customers.map((customer) => (
-                                            <option
-                                                key={customer.id}
-                                                value={customer.id}
-                                            >
-                                                {customer.name}
-                                            </option>
-                                        ))}
+                                        {customers.map(
+                                            (customer) => (
+                                                <option
+                                                    key={
+                                                        customer.id
+                                                    }
+                                                    value={
+                                                        customer.id
+                                                    }
+                                                >
+                                                    {
+                                                        customer.name
+                                                    }
+                                                </option>
+                                            ),
+                                        )}
                                     </select>
 
                                     <FormError
                                         message={
-                                            activeForm.errors.customer_id
+                                            currentErrors.customer_id
                                         }
                                     />
                                 </div>
+
                             </div>
                         </div>
 
+                        {/* DESCRIPTION */}
+
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
+
                             <div className="mb-6">
                                 <h2 className="text-base font-semibold">
                                     Description
@@ -371,6 +648,9 @@ export default function Create({ customers, categories }: Props) {
                             </div>
 
                             <div className="space-y-5">
+
+                                {/* DESCRIPTION */}
+
                                 <div>
                                     <label
                                         htmlFor="description"
@@ -382,27 +662,33 @@ export default function Create({ customers, categories }: Props) {
                                     <input
                                         id="description"
                                         type="text"
-                                        value={activeForm.data.description}
+                                        value={
+                                            currentData.description
+                                        }
                                         onChange={(event) =>
-                                            activeForm.setData(
+                                            currentSetData(
                                                 'description',
-                                                event.target.value,
+                                                event.target
+                                                    .value,
                                             )
                                         }
                                         placeholder={
-                                            type === 'expense'
+                                            type ===
+                                            'expense'
                                                 ? 'Office rent'
                                                 : 'Website development'
                                         }
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     />
 
                                     <FormError
                                         message={
-                                            activeForm.errors.description
+                                            currentErrors.description
                                         }
                                     />
                                 </div>
+
+                                {/* NOTE */}
 
                                 <div>
                                     <label
@@ -415,23 +701,31 @@ export default function Create({ customers, categories }: Props) {
                                     <textarea
                                         id="note"
                                         rows={9}
-                                        value={activeForm.data.note}
+                                        value={
+                                            currentData.note
+                                        }
                                         onChange={(event) =>
-                                            activeForm.setData(
+                                            currentSetData(
                                                 'note',
-                                                event.target.value,
+                                                event.target
+                                                    .value,
                                             )
                                         }
                                         placeholder="Additional notes..."
-                                        className="mt-2 w-full resize-none rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                        className="mt-2 w-full resize-none rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     />
 
                                     <FormError
-                                        message={activeForm.errors.note}
+                                        message={
+                                            currentErrors.note
+                                        }
                                     />
                                 </div>
 
+                                {/* BUTTONS */}
+
                                 <div className="flex justify-end gap-3 border-t border-neutral-800 pt-5">
+
                                     <a
                                         href="/operations"
                                         className="rounded-xl border border-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800"
@@ -442,25 +736,120 @@ export default function Create({ customers, categories }: Props) {
                                     <button
                                         type="button"
                                         onClick={submit}
-                                        disabled={activeForm.processing}
+                                        disabled={
+                                            currentProcessing
+                                        }
                                         className={`rounded-xl px-5 py-2.5 text-sm font-semibold text-white transition ${
-                                            type === 'expense'
+                                            type ===
+                                            'expense'
                                                 ? 'bg-red-500 hover:bg-red-400'
                                                 : 'bg-emerald-500 hover:bg-emerald-400'
                                         } disabled:cursor-not-allowed disabled:opacity-50`}
                                     >
-                                        {activeForm.processing
+                                        {currentProcessing
                                             ? 'Saving...'
-                                            : type === 'expense'
+                                            : type ===
+                                                'expense'
                                               ? 'Add Expense'
                                               : 'Add Income'}
                                     </button>
+
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            {/* CATEGORY MODAL */}
+
+            {showCategoryModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+
+                    <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-900 p-6 shadow-2xl">
+
+                        <h2 className="text-lg font-semibold">
+                            Create new category
+                        </h2>
+
+                        <p className="mt-1 text-sm text-neutral-500">
+                            Create a new {type} category.
+                        </p>
+
+                        <div className="mt-6">
+
+                            <label
+                                htmlFor="new_category_name"
+                                className="text-sm font-medium text-neutral-300"
+                            >
+                                Category name
+                            </label>
+
+                            <input
+                                id="new_category_name"
+                                type="text"
+                                autoFocus
+                                value={newCategoryName}
+                                onChange={(event) =>
+                                    setNewCategoryName(
+                                        event.target
+                                            .value,
+                                    )
+                                }
+                                onKeyDown={(event) => {
+                                    if (
+                                        event.key ===
+                                        'Enter'
+                                    ) {
+                                        createCategory();
+                                    }
+                                }}
+                                placeholder="e.g. Office Rent"
+                                className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 outline-none focus:border-neutral-600"
+                            />
+
+                            {categoryError && (
+                                <p className="mt-2 text-sm text-red-400">
+                                    {categoryError}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-3">
+
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowCategoryModal(
+                                        false,
+                                    );
+
+                                    setNewCategoryName('');
+
+                                    setCategoryError('');
+                                }}
+                                className="rounded-xl border border-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={
+                                    categoryCreating
+                                }
+                                onClick={createCategory}
+                                className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white disabled:opacity-50"
+                            >
+                                {categoryCreating
+                                    ? 'Creating...'
+                                    : 'Create Category'}
+                            </button>
+
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

@@ -10,6 +10,7 @@ import {
 type Category = {
     id: number;
     name: string;
+    type: 'expense' | 'income';
 };
 
 type Props = {
@@ -37,8 +38,29 @@ export default function Create({ categories }: Props) {
         formatInputDate(today),
     );
 
+    const [localCategories, setLocalCategories] =
+        useState<Category[]>(categories);
+
+    const [showCategoryModal, setShowCategoryModal] =
+        useState(false);
+
+    const [newCategoryName, setNewCategoryName] =
+        useState('');
+
+    const [categoryCreating, setCategoryCreating] =
+        useState(false);
+
+    const [categoryError, setCategoryError] =
+        useState('');
+
+    const expenseCategories = localCategories.filter(
+        (category) => category.type === 'expense',
+    );
+
     const handleDateChange = (value: string) => {
-        const numbers = value.replace(/\D/g, '').slice(0, 8);
+        const numbers = value
+            .replace(/\D/g, '')
+            .slice(0, 8);
 
         let formatted = numbers;
 
@@ -61,10 +83,97 @@ export default function Create({ categories }: Props) {
         setDateInput(formatted);
     };
 
-    const submit = (event: React.FormEvent<HTMLFormElement>) => {
+    const createCategory = async () => {
+        const name = newCategoryName.trim();
+
+        if (!name) {
+            setCategoryError(
+                'Category name is required.',
+            );
+            return;
+        }
+
+        setCategoryCreating(true);
+        setCategoryError('');
+
+        try {
+            const token = document
+                .querySelector(
+                    'meta[name="csrf-token"]',
+                )
+                ?.getAttribute('content');
+
+            const response = await fetch(
+                '/categories/inline',
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type':
+                            'application/json',
+                        Accept: 'application/json',
+                        ...(token
+                            ? {
+                                  'X-CSRF-TOKEN':
+                                      token,
+                              }
+                            : {}),
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        name,
+                        type: 'expense',
+                    }),
+                },
+            );
+
+            const result = await response.json();
+
+            if (!response.ok) {
+                setCategoryError(
+                    result.message ??
+                        'Unable to create category.',
+                );
+                return;
+            }
+
+            const createdCategory =
+                result.category as Category;
+
+            setLocalCategories((current) => [
+                ...current,
+                createdCategory,
+            ]);
+
+            setData(
+                'category_id',
+                String(createdCategory.id),
+            );
+
+            setNewCategoryName('');
+            setShowCategoryModal(false);
+        } catch {
+            setCategoryError(
+                'Unable to create category.',
+            );
+        } finally {
+            setCategoryCreating(false);
+        }
+    };
+
+    const submit = (
+        event: React.FormEvent<HTMLFormElement>,
+    ) => {
         event.preventDefault();
 
+        const expenseDate =
+            parseInputDate(dateInput);
+
         post('/expenses', {
+            transform: (formData) => ({
+                ...formData,
+                expense_date: expenseDate,
+            }),
+
             onSuccess: () => {
                 reset();
 
@@ -72,11 +181,11 @@ export default function Create({ categories }: Props) {
                     .toISOString()
                     .slice(0, 10);
 
-                setDateInput(formatInputDate(newToday));
+                setDateInput(
+                    formatInputDate(newToday),
+                );
             },
         });
-
-        setData('expense_date', parseInputDate(dateInput));
     };
 
     return (
@@ -91,22 +200,20 @@ export default function Create({ categories }: Props) {
                             ← Back to Expenses
                         </a>
 
-                        <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-                            <div>
-                                <div className="flex items-center gap-3">
-                                    <h1 className="text-2xl font-semibold tracking-tight">
-                                        Create Expense
-                                    </h1>
+                        <div className="mt-5">
+                            <div className="flex items-center gap-3">
+                                <h1 className="text-2xl font-semibold tracking-tight">
+                                    Create Expense
+                                </h1>
 
-                                    <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400">
-                                        Expense
-                                    </span>
-                                </div>
-
-                                <p className="mt-2 text-sm text-neutral-400">
-                                    Record a new business expense.
-                                </p>
+                                <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400">
+                                    Expense
+                                </span>
                             </div>
+
+                            <p className="mt-2 text-sm text-neutral-400">
+                                Record a new business expense.
+                            </p>
                         </div>
                     </div>
 
@@ -145,11 +252,13 @@ export default function Create({ categories }: Props) {
                                             )
                                         }
                                         placeholder="Office rent"
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 transition outline-none placeholder:text-neutral-600 focus:border-neutral-600 focus:bg-neutral-800"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-neutral-600"
                                     />
 
                                     <FormError
-                                        message={errors.description}
+                                        message={
+                                            errors.description
+                                        }
                                     />
                                 </div>
 
@@ -179,12 +288,14 @@ export default function Create({ categories }: Props) {
                                                 )
                                             }
                                             placeholder="0.00"
-                                            className="w-full rounded-xl border border-neutral-800 bg-neutral-800 py-3 pl-9 pr-3 text-sm font-medium text-neutral-100 transition outline-none placeholder:text-neutral-600 focus:border-neutral-600"
+                                            className="w-full rounded-xl border border-neutral-800 bg-neutral-800 py-3 pl-9 pr-3 text-sm font-medium text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-neutral-600"
                                         />
                                     </div>
 
                                     <FormError
-                                        message={errors.amount}
+                                        message={
+                                            errors.amount
+                                        }
                                     />
                                 </div>
                             </div>
@@ -207,24 +318,49 @@ export default function Create({ categories }: Props) {
                                                 event.target.value,
                                             )
                                         }
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     >
                                         <option value="">
                                             Select category...
                                         </option>
 
-                                        {categories.map((category) => (
-                                            <option
-                                                key={category.id}
-                                                value={category.id}
-                                            >
-                                                {category.name}
-                                            </option>
-                                        ))}
+                                        {expenseCategories.map(
+                                            (category) => (
+                                                <option
+                                                    key={
+                                                        category.id
+                                                    }
+                                                    value={
+                                                        category.id
+                                                    }
+                                                >
+                                                    {
+                                                        category.name
+                                                    }
+                                                </option>
+                                            ),
+                                        )}
                                     </select>
 
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setCategoryError(
+                                                '',
+                                            );
+                                            setShowCategoryModal(
+                                                true,
+                                            );
+                                        }}
+                                        className="mt-2 text-sm font-medium text-blue-400 transition hover:text-blue-300"
+                                    >
+                                        + Create new category
+                                    </button>
+
                                     <FormError
-                                        message={errors.category_id}
+                                        message={
+                                            errors.category_id
+                                        }
                                     />
                                 </div>
 
@@ -248,46 +384,119 @@ export default function Create({ categories }: Props) {
                                                 event.target.value,
                                             )
                                         }
-                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 transition outline-none placeholder:text-neutral-600 focus:border-neutral-600"
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-neutral-600"
                                     />
 
                                     <FormError
-                                        message={errors.expense_date}
+                                        message={
+                                            errors.expense_date
+                                        }
                                     />
                                 </div>
                             </div>
                         </div>
 
                         <div className="border-t border-neutral-800 bg-neutral-950/40 px-6 py-5">
-                            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-                                <p className="text-xs text-neutral-600">
-                                    All required expense information should be
-                                    provided.
-                                </p>
+                            <div className="flex justify-end gap-3">
+                                <a
+                                    href="/expenses"
+                                    className="rounded-xl border border-neutral-800 px-5 py-2.5 text-sm font-medium text-neutral-300 hover:bg-neutral-800"
+                                >
+                                    Cancel
+                                </a>
 
-                                <div className="flex gap-3">
-                                    <a
-                                        href="/expenses"
-                                        className="rounded-xl border border-neutral-800 px-5 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800"
-                                    >
-                                        Cancel
-                                    </a>
-
-                                    <button
-                                        type="submit"
-                                        disabled={processing}
-                                        className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
-                                    >
-                                        {processing
-                                            ? 'Creating...'
-                                            : 'Create Expense'}
-                                    </button>
-                                </div>
+                                <button
+                                    type="submit"
+                                    disabled={processing}
+                                    className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                                >
+                                    {processing
+                                        ? 'Creating...'
+                                        : 'Create Expense'}
+                                </button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
+
+            {showCategoryModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
+                    <div className="w-full max-w-md rounded-2xl border border-neutral-800 bg-neutral-900 p-6 shadow-2xl">
+                        <h2 className="text-lg font-semibold">
+                            Create new category
+                        </h2>
+
+                        <p className="mt-1 text-sm text-neutral-500">
+                            Create a new expense category.
+                        </p>
+
+                        <div className="mt-6">
+                            <label
+                                htmlFor="new_category_name"
+                                className="text-sm font-medium text-neutral-300"
+                            >
+                                Category name
+                            </label>
+
+                            <input
+                                id="new_category_name"
+                                type="text"
+                                autoFocus
+                                value={newCategoryName}
+                                onChange={(event) =>
+                                    setNewCategoryName(
+                                        event.target.value,
+                                    )
+                                }
+                                onKeyDown={(event) => {
+                                    if (
+                                        event.key ===
+                                        'Enter'
+                                    ) {
+                                        createCategory();
+                                    }
+                                }}
+                                placeholder="e.g. Office Rent"
+                                className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 outline-none focus:border-neutral-600"
+                            />
+
+                            {categoryError && (
+                                <p className="mt-2 text-sm text-red-400">
+                                    {categoryError}
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="mt-6 flex justify-end gap-3">
+                            <button
+                                type="button"
+                                onClick={() => {
+                                    setShowCategoryModal(
+                                        false,
+                                    );
+                                    setNewCategoryName('');
+                                    setCategoryError('');
+                                }}
+                                className="rounded-xl border border-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-300 hover:bg-neutral-800"
+                            >
+                                Cancel
+                            </button>
+
+                            <button
+                                type="button"
+                                disabled={categoryCreating}
+                                onClick={createCategory}
+                                className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-semibold text-neutral-950 hover:bg-white disabled:opacity-50"
+                            >
+                                {categoryCreating
+                                    ? 'Creating...'
+                                    : 'Create Category'}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AppLayout>
     );
 }

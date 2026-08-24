@@ -6,6 +6,7 @@ use App\Http\Requests\StoreCategoryRequest;
 use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Services\CategoryService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
@@ -43,6 +44,19 @@ class CategoryController extends Controller
         return redirect()
             ->route('categories.index')
             ->with('success', 'Category created successfully.');
+    }
+
+    public function storeInline(
+        StoreCategoryRequest $request
+    ): JsonResponse {
+        $category = $this->categoryService->createCategory(
+            auth()->user()->business_id,
+            $request->validated()
+        );
+
+        return response()->json([
+            'category' => $category,
+        ]);
     }
 
     public function edit(Category $category): Response

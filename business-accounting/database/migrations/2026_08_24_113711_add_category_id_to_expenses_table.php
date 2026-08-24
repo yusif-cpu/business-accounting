@@ -8,20 +8,24 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::table('operations', function (Blueprint $table) {
-            $table->foreignId('category_id')
-                ->nullable()
-                ->after('amount')
-                ->constrained('categories')
-                ->nullOnDelete();
-        });
+        if (! Schema::hasColumn('expenses', 'category_id')) {
+            Schema::table('expenses', function (Blueprint $table) {
+                $table->foreignId('category_id')
+                    ->nullable()
+                    ->after('amount')
+                    ->constrained('categories')
+                    ->nullOnDelete();
+            });
+        }
     }
 
     public function down(): void
     {
-        Schema::table('operations', function (Blueprint $table) {
-            $table->dropForeign(['category_id']);
-            $table->dropColumn('category_id');
-        });
+        if (Schema::hasColumn('expenses', 'category_id')) {
+            Schema::table('expenses', function (Blueprint $table) {
+                $table->dropForeign(['category_id']);
+                $table->dropColumn('category_id');
+            });
+        }
     }
 };
