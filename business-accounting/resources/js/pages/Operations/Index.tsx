@@ -11,7 +11,7 @@ type Customer = {
 
 type Category = {
     id: number;
-    business_id: number;
+    business_id?: number;
     type: 'expense' | 'income';
     name: string;
 };
@@ -46,9 +46,12 @@ type Props = {
         count: number;
     };
 
+    categories: Category[];
+
     filters: {
         search: string;
         type: string;
+        category_id: string;
         start_date: string;
         end_date: string;
     };
@@ -87,6 +90,7 @@ function SummaryCard({
 export default function Index({
     operations,
     summary,
+    categories,
     filters,
 }: Props) {
     const [deleteId, setDeleteId] = useState<number | null>(
@@ -99,6 +103,10 @@ export default function Index({
 
     const [type, setType] = useState(
         filters.type ?? '',
+    );
+
+    const [categoryId, setCategoryId] = useState(
+        filters.category_id ?? '',
     );
 
     const [startDate, setStartDate] = useState(
@@ -135,6 +143,8 @@ export default function Index({
             {
                 search: search || undefined,
                 type: type || undefined,
+                category_id:
+                    categoryId || undefined,
                 start_date:
                     startDate || undefined,
                 end_date:
@@ -154,6 +164,7 @@ export default function Index({
     const clearFilters = () => {
         setSearch('');
         setType('');
+        setCategoryId('');
         setStartDate('');
         setEndDate('');
         setProcessingFilter(true);
@@ -253,7 +264,8 @@ export default function Index({
                                 />
                             </div>
 
-                            <div className="grid gap-4 md:grid-cols-3">
+                            <div className="grid gap-4 md:grid-cols-4">
+
                                 <div>
                                     <label
                                         htmlFor="type"
@@ -283,6 +295,46 @@ export default function Index({
                                         <option value="expense">
                                             Expense
                                         </option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label
+                                        htmlFor="category_id"
+                                        className="mb-2 block text-sm font-medium text-neutral-400"
+                                    >
+                                        Category
+                                    </label>
+
+                                    <select
+                                        id="category_id"
+                                        value={categoryId}
+                                        onChange={(event) =>
+                                            setCategoryId(
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                    >
+                                        <option value="">
+                                            All categories
+                                        </option>
+
+                                        {categories.map(
+                                            (category) => (
+                                                <option
+                                                    key={
+                                                        category.id
+                                                    }
+                                                    value={
+                                                        category.id
+                                                    }
+                                                >
+                                                    {category.name} (
+                                                    {category.type})
+                                                </option>
+                                            ),
+                                        )}
                                     </select>
                                 </div>
 
@@ -574,7 +626,8 @@ export default function Index({
 
                                 {/* PAGINATION */}
 
-                                {operations.links.length > 3 && (
+                                {operations.links.length >
+                                    3 && (
                                     <div className="flex flex-wrap gap-2 border-t border-neutral-800 p-4">
                                         {operations.links.map(
                                             (
@@ -615,7 +668,9 @@ export default function Index({
             </div>
 
             <DeleteConfirmation
-                open={deleteId !== null}
+                open={
+                    deleteId !== null
+                }
                 onOpenChange={(open) => {
                     if (!open) {
                         setDeleteId(null);
@@ -623,8 +678,12 @@ export default function Index({
                 }}
                 title="Delete operation?"
                 description="This operation will be permanently deleted. This action cannot be undone."
-                onConfirm={handleDelete}
-                processing={processing}
+                onConfirm={
+                    handleDelete
+                }
+                processing={
+                    processing
+                }
             />
         </AppLayout>
     );

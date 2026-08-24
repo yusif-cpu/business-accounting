@@ -9,6 +9,7 @@ use App\Models\Customer;
 use App\Models\Operation;
 use App\Services\OperationService;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -19,37 +20,77 @@ class OperationController extends Controller
         private OperationService $operationService
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
-        $search = request()->string('search')->toString();
-        $type = request()->string('type')->toString();
-        $startDate = request()->string('start_date')->toString();
-        $endDate = request()->string('end_date')->toString();
+        $search = $request
+            ->string('search')
+            ->trim()
+            ->toString();
 
-        return Inertia::render('Operations/Index', [
-            'operations' => $this->operationService
-                ->getOperationsForCurrentBusiness(
-                    $search ?: null,
-                    $type ?: null,
-                    $startDate ?: null,
-                    $endDate ?: null
-                ),
+        $type = $request
+            ->string('type')
+            ->toString();
 
-            'summary' => $this->operationService
-                ->getOperationSummary(
-                    $search ?: null,
-                    $type ?: null,
-                    $startDate ?: null,
-                    $endDate ?: null
-                ),
+        $categoryId = $request
+            ->string('category_id')
+            ->toString();
 
-            'filters' => [
-                'search' => $search,
-                'type' => $type,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-            ],
-        ]);
+        $startDate = $request
+            ->string('start_date')
+            ->toString();
+
+        $endDate = $request
+            ->string('end_date')
+            ->toString();
+
+        $operations = $this->operationService
+            ->getOperationsForCurrentBusiness(
+                $search ?: null,
+                $type ?: null,
+                $startDate ?: null,
+                $endDate ?: null,
+                $categoryId ?: null
+            );
+
+        $summary = $this->operationService
+            ->getOperationSummary(
+                $search ?: null,
+                $type ?: null,
+                $startDate ?: null,
+                $endDate ?: null,
+                $categoryId ?: null
+            );
+
+        $categories = Category::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'type',
+                'name',
+            ]);
+
+        return Inertia::render(
+            'Operations/Index',
+            [
+                'operations' => $operations,
+
+                'summary' => $summary,
+
+                'categories' => $categories,
+
+                'filters' => [
+                    'search' => $search,
+                    'type' => $type,
+                    'category_id' => $categoryId,
+                    'start_date' => $startDate,
+                    'end_date' => $endDate,
+                ],
+            ]
+        );
     }
 
     public function create(): Response
@@ -73,10 +114,13 @@ class OperationController extends Controller
                 'name',
             ]);
 
-        return Inertia::render('Operations/Create', [
-            'customers' => $customers,
-            'categories' => $categories,
-        ]);
+        return Inertia::render(
+            'Operations/Create',
+            [
+                'customers' => $customers,
+                'categories' => $categories,
+            ]
+        );
     }
 
     public function store(
@@ -89,24 +133,38 @@ class OperationController extends Controller
 
         return redirect()
             ->route('operations.create')
-            ->with('success', 'Operation added successfully.');
+            ->with(
+                'success',
+                'Operation added successfully.'
+            );
     }
 
-    public function show(Operation $operation): Response
-    {
-        Gate::authorize('view', $operation);
+    public function show(
+        Operation $operation
+    ): Response {
+        Gate::authorize(
+            'view',
+            $operation
+        );
 
-        return Inertia::render('Operations/Show', [
-            'operation' => $operation->load([
-                'customer',
-                'category',
-            ]),
-        ]);
+        return Inertia::render(
+            'Operations/Show',
+            [
+                'operation' => $operation->load([
+                    'customer',
+                    'category',
+                ]),
+            ]
+        );
     }
 
-    public function edit(Operation $operation): Response
-    {
-        Gate::authorize('update', $operation);
+    public function edit(
+        Operation $operation
+    ): Response {
+        Gate::authorize(
+            'update',
+            $operation
+        );
 
         $customers = Customer::where(
             'business_id',
@@ -127,21 +185,29 @@ class OperationController extends Controller
                 'name',
             ]);
 
-        return Inertia::render('Operations/Edit', [
-            'operation' => $operation->load([
-                'customer',
-                'category',
-            ]),
-            'customers' => $customers,
-            'categories' => $categories,
-        ]);
+        return Inertia::render(
+            'Operations/Edit',
+            [
+                'operation' => $operation->load([
+                    'customer',
+                    'category',
+                ]),
+
+                'customers' => $customers,
+
+                'categories' => $categories,
+            ]
+        );
     }
 
     public function update(
         UpdateOperationRequest $request,
         Operation $operation
     ): RedirectResponse {
-        Gate::authorize('update', $operation);
+        Gate::authorize(
+            'update',
+            $operation
+        );
 
         $this->operationService->updateOperation(
             $operation,
@@ -149,18 +215,33 @@ class OperationController extends Controller
         );
 
         return redirect()
-            ->route('operations.show', $operation)
-            ->with('success', 'Operation updated successfully.');
+            ->route(
+                'operations.show',
+                $operation
+            )
+            ->with(
+                'success',
+                'Operation updated successfully.'
+            );
     }
 
-    public function destroy(Operation $operation): RedirectResponse
-    {
-        Gate::authorize('delete', $operation);
+    public function destroy(
+        Operation $operation
+    ): RedirectResponse {
+        Gate::authorize(
+            'delete',
+            $operation
+        );
 
-        $this->operationService->deleteOperation($operation);
+        $this->operationService->deleteOperation(
+            $operation
+        );
 
         return redirect()
             ->route('operations.index')
-            ->with('success', 'Operation deleted successfully.');
+            ->with(
+                'success',
+                'Operation deleted successfully.'
+            );
     }
 }

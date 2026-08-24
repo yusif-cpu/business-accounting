@@ -4,108 +4,19 @@ namespace App\Services;
 
 use App\Models\Operation;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Database\Eloquent\Builder;
 
 class OperationService
 {
-    public function getOperationsForCurrentBusiness(
+    private function applyFilters(
+        Builder $query,
         ?string $search = null,
         ?string $type = null,
         ?string $startDate = null,
         ?string $endDate = null,
         ?string $categoryId = null
-    ): LengthAwarePaginator {
-        $query = Operation::with([
-            'customer',
-            'category',
-        ])
-            ->where(
-                'business_id',
-                auth()->user()->business_id
-            );
-
-        if ($search) {
-            $query->where(function ($query) use ($search) {
-                $query
-                    ->where(
-                        'description',
-                        'like',
-                        "%{$search}%"
-                    )
-                    ->orWhereHas(
-                        'customer',
-                        function ($query) use ($search) {
-                            $query->where(
-                                'name',
-                                'like',
-                                "%{$search}%"
-                            );
-                        }
-                    )
-                    ->orWhereHas(
-                        'category',
-                        function ($query) use ($search) {
-                            $query->where(
-                                'name',
-                                'like',
-                                "%{$search}%"
-                            );
-                        }
-                    );
-            });
-        }
-
-        if (
-            $type &&
-            in_array(
-                $type,
-                ['income', 'expense'],
-                true
-            )
-        ) {
-            $query->where(
-                'type',
-                $type
-            );
-        }
-
-        if ($categoryId) {
-            $query->where(
-                'category_id',
-                $categoryId
-            );
-        }
-
-        if ($startDate) {
-            $query->whereDate(
-                'operation_date',
-                '>=',
-                $startDate
-            );
-        }
-
-        if ($endDate) {
-            $query->whereDate(
-                'operation_date',
-                '<=',
-                $endDate
-            );
-        }
-
-        return $query
-            ->latest('operation_date')
-            ->latest('id')
-            ->paginate(10)
-            ->withQueryString();
-    }
-
-    public function getOperationSummary(
-        ?string $search = null,
-        ?string $type = null,
-        ?string $startDate = null,
-        ?string $endDate = null,
-        ?string $categoryId = null
-    ): array {
-        $query = Operation::where(
+    ): Builder {
+        $query->where(
             'business_id',
             auth()->user()->business_id
         );
@@ -145,7 +56,10 @@ class OperationService
             $type &&
             in_array(
                 $type,
-                ['income', 'expense'],
+                [
+                    'income',
+                    'expense',
+                ],
                 true
             )
         ) {
@@ -178,6 +92,55 @@ class OperationService
             );
         }
 
+        return $query;
+    }
+
+    public function getOperationsForCurrentBusiness(
+        ?string $search = null,
+        ?string $type = null,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ?string $categoryId = null
+    ): LengthAwarePaginator {
+        $query = Operation::with([
+            'customer',
+            'category',
+        ]);
+
+        $this->applyFilters(
+            $query,
+            $search,
+            $type,
+            $startDate,
+            $endDate,
+            $categoryId
+        );
+
+        return $query
+            ->latest('operation_date')
+            ->latest('id')
+            ->paginate(10)
+            ->withQueryString();
+    }
+
+    public function getOperationSummary(
+        ?string $search = null,
+        ?string $type = null,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ?string $categoryId = null
+    ): array {
+        $query = Operation::query();
+
+        $this->applyFilters(
+            $query,
+            $search,
+            $type,
+            $startDate,
+            $endDate,
+            $categoryId
+        );
+
         $income = (clone $query)
             ->where(
                 'type',
@@ -193,9 +156,11 @@ class OperationService
             ->sum('amount');
 
         return [
-            'income' => (float) $income,
+            'income' =>
+                (float) $income,
 
-            'expenses' => (float) $expenses,
+            'expenses' =>
+                (float) $expenses,
 
             'balance' =>
                 (float) $income -
@@ -211,7 +176,8 @@ class OperationService
         array $data
     ): Operation {
         return Operation::create([
-            'business_id' => $businessId,
+            'business_id' =>
+                $businessId,
 
             'customer_id' =>
                 $data['customer_id'] ?? null,
