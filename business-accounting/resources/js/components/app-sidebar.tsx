@@ -6,6 +6,7 @@ import {
     ChartNoAxesCombined,
     FolderGit2,
     LayoutGrid,
+    ListChecks,
     ReceiptText,
     Tags,
     TrendingUp,
@@ -41,6 +42,12 @@ const mainNavItems: NavItem[] = [
         title: 'Sales',
         href: '/sales',
         icon: ChartNoAxesCombined,
+    },
+
+    {
+        title: 'Sale Statuses',
+        href: '/sale-statuses',
+        icon: ListChecks,
     },
 
     {

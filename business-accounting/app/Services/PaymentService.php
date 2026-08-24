@@ -4,12 +4,14 @@ namespace App\Services;
 
 use App\Models\Payment;
 use App\Models\Sale;
+use App\Models\SaleStatus;
 use Illuminate\Database\Eloquent\Collection;
 
 class PaymentService
 {
-    public function getPaymentsForSale(Sale $sale): Collection
-    {
+    public function getPaymentsForSale(
+        Sale $sale
+    ): Collection {
         return $sale->payments()
             ->latest('paid_at')
             ->get();
@@ -30,8 +32,9 @@ class PaymentService
         return $payment;
     }
 
-    public function deletePayment(Payment $payment): void
-    {
+    public function deletePayment(
+        Payment $payment
+    ): void {
         $sale = $payment->sale;
 
         $payment->delete();
@@ -39,21 +42,32 @@ class PaymentService
         $this->updateSaleStatus($sale);
     }
 
-    private function updateSaleStatus(Sale $sale): void
-    {
-        $paidAmount = (float) $sale->payments()->sum('amount');
+    private function updateSaleStatus(
+        Sale $sale
+    ): void {
+        $paidAmount = (float) $sale
+            ->payments()
+            ->sum('amount');
+
         $saleAmount = (float) $sale->amount;
 
-        if ($paidAmount >= $saleAmount) {
-            $sale->update([
-                'status' => 'paid',
-            ]);
+        $slug = $paidAmount >= $saleAmount
+            ? 'paid'
+            : 'pending';
 
+        $status = SaleStatus::where(
+            'business_id',
+            $sale->business_id
+        )
+            ->where('slug', $slug)
+            ->first();
+
+        if (!$status) {
             return;
         }
 
         $sale->update([
-            'status' => 'pending',
+            'status_id' => $status->id,
         ]);
     }
 }

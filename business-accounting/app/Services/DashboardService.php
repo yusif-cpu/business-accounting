@@ -18,10 +18,15 @@ class DashboardService
         $salesQuery = Sale::where(
             'business_id',
             $businessId
-        )->where(
+        )->whereHas(
             'status',
-            '!=',
-            'cancelled'
+            function ($query) {
+                $query->where(
+                    'slug',
+                    '!=',
+                    'cancelled'
+                );
+            }
         );
 
         $expensesQuery = Expense::where(
@@ -80,23 +85,28 @@ class DashboardService
         )->count();
 
         return [
-            'totalSales' => (float) $totalSales,
+            'totalSales' =>
+                (float) $totalSales,
 
-            'collected' => (float) $collected,
+            'collected' =>
+                (float) $collected,
 
             'outstanding' =>
                 (float) $totalSales -
                 (float) $collected,
 
-            'expenses' => (float) $expenses,
+            'expenses' =>
+                (float) $expenses,
 
             'profit' =>
                 (float) $totalSales -
                 (float) $expenses,
 
-            'salesCount' => $salesCount,
+            'salesCount' =>
+                $salesCount,
 
-            'customersCount' => $customersCount,
+            'customersCount' =>
+                $customersCount,
 
             'monthlyOverview' =>
                 $this->getMonthlyOverview(
@@ -152,17 +162,29 @@ class DashboardService
         $currentMonth =
             CarbonImmutable::now()->startOfMonth();
 
-        for ($index = 5; $index >= 0; $index--) {
-            $month = $currentMonth->subMonths($index);
+        for (
+            $index = 5;
+            $index >= 0;
+            $index--
+        ) {
+            $month =
+                $currentMonth->subMonths(
+                    $index
+                );
 
             $salesQuery = Sale::where(
                 'business_id',
                 $businessId
             )
-                ->where(
+                ->whereHas(
                     'status',
-                    '!=',
-                    'cancelled'
+                    function ($query) {
+                        $query->where(
+                            'slug',
+                            '!=',
+                            'cancelled'
+                        );
+                    }
                 )
                 ->whereBetween('sold_at', [
                     $month->startOfMonth(),
@@ -172,16 +194,15 @@ class DashboardService
             $expensesQuery = Expense::where(
                 'business_id',
                 $businessId
-            )
-                ->whereBetween('expense_date', [
-                    $month
-                        ->startOfMonth()
-                        ->toDateString(),
+            )->whereBetween('expense_date', [
+                $month
+                    ->startOfMonth()
+                    ->toDateString(),
 
-                    $month
-                        ->endOfMonth()
-                        ->toDateString(),
-                ]);
+                $month
+                    ->endOfMonth()
+                    ->toDateString(),
+            ]);
 
             if ($startDate) {
                 $salesQuery->whereDate(
@@ -211,7 +232,8 @@ class DashboardService
                 );
             }
 
-            $sales = $salesQuery->sum('amount');
+            $sales =
+                $salesQuery->sum('amount');
 
             $expenses =
                 $expensesQuery->sum('amount');
@@ -236,15 +258,23 @@ class DashboardService
         ?string $startDate = null,
         ?string $endDate = null
     ) {
-        $query = Sale::with('customer')
+        $query = Sale::with([
+            'customer',
+            'status',
+        ])
             ->where(
                 'business_id',
                 $businessId
             )
-            ->where(
+            ->whereHas(
                 'status',
-                '!=',
-                'cancelled'
+                function ($query) {
+                    $query->where(
+                        'slug',
+                        '!=',
+                        'cancelled'
+                    );
+                }
             );
 
         if ($startDate) {
@@ -306,15 +336,23 @@ class DashboardService
         ?string $startDate = null,
         ?string $endDate = null
     ) {
-        $query = Sale::with('customer')
+        $query = Sale::with([
+            'customer',
+            'status',
+        ])
             ->where(
                 'business_id',
                 $businessId
             )
-            ->where(
+            ->whereHas(
                 'status',
-                '!=',
-                'cancelled'
+                function ($query) {
+                    $query->where(
+                        'slug',
+                        '!=',
+                        'cancelled'
+                    );
+                }
             );
 
         if ($startDate) {
@@ -390,10 +428,15 @@ class DashboardService
             'business_id',
             $businessId
         )
-            ->where(
+            ->whereHas(
                 'status',
-                '!=',
-                'cancelled'
+                function ($query) {
+                    $query->where(
+                        'slug',
+                        '!=',
+                        'cancelled'
+                    );
+                }
             )
             ->whereBetween('sold_at', [
                 $start,
@@ -430,18 +473,22 @@ class DashboardService
             $date->lte($end);
             $date = $date->addDay()
         ) {
-            $dateKey = $date->toDateString();
+            $dateKey =
+                $date->toDateString();
 
             $dailySales =
-                $sales->get($dateKey, collect())
+                $sales
+                    ->get($dateKey, collect())
                     ->sum('amount');
 
             $dailyExpenses =
-                $expenses->get($dateKey, collect())
+                $expenses
+                    ->get($dateKey, collect())
                     ->sum('amount');
 
             $days[] = [
-                'date' => $dateKey,
+                'date' =>
+                    $dateKey,
 
                 'sales' =>
                     (float) $dailySales,

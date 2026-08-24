@@ -8,6 +8,7 @@ use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SaleController;
+use App\Http\Controllers\SaleStatusController;
 use Illuminate\Support\Facades\Route;
 
 Route::inertia(
@@ -44,6 +45,23 @@ Route::middleware('auth')->group(function () {
     Route::resource(
         'sales',
         SaleController::class
+    );
+
+    Route::resource(
+        'sale-statuses',
+        SaleStatusController::class
+    )->except([
+        'show',
+    ]);
+
+    Route::post(
+    '/sale-statuses/inline',
+    [
+        SaleStatusController::class,
+        'inlineStore',
+    ]
+    )->name(
+        'sale-statuses.inline-store'
     );
 
     /*
@@ -86,6 +104,38 @@ Route::middleware('auth')->group(function () {
             'store',
         ]
     )->name('income.store');
+
+    Route::get(
+        '/income/{id}',
+        [
+            IncomeController::class,
+            'show',
+        ]
+    )->name('income.show');
+
+    Route::get(
+        '/income/{id}/edit',
+        [
+            IncomeController::class,
+            'edit',
+        ]
+    )->name('income.edit');
+
+    Route::put(
+        '/income/{id}',
+        [
+            IncomeController::class,
+            'update',
+        ]
+    )->name('income.update');
+
+    Route::delete(
+        '/income/{id}',
+        [
+            IncomeController::class,
+            'destroy',
+        ]
+    )->name('income.destroy');
 
     /*
     |--------------------------------------------------------------------------

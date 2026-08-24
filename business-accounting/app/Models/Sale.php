@@ -13,7 +13,7 @@ class Sale extends Model
         'customer_id',
         'external_id',
         'amount',
-        'status',
+        'status_id',
         'sold_at',
     ];
 
@@ -24,16 +24,30 @@ class Sale extends Model
 
     public function business(): BelongsTo
     {
-        return $this->belongsTo(Business::class);
+        return $this->belongsTo(
+            Business::class
+        );
     }
 
     public function customer(): BelongsTo
     {
-        return $this->belongsTo(Customer::class);
+        return $this->belongsTo(
+            Customer::class
+        );
+    }
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(
+            SaleStatus::class,
+            'status_id'
+        );
     }
 
     public function payments(): HasMany
     {
-        return $this->hasMany(Payment::class);
+        return $this->hasMany(
+            Payment::class
+        );
     }
 }

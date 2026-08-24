@@ -18,18 +18,38 @@ class UpdateSaleRequest extends FormRequest
         return [
             'customer_id' => [
                 'nullable',
-                Rule::exists('customers', 'id')->where(
-                    fn ($query) => $query->where(
-                        'business_id',
-                        auth()->user()->business_id
-                    )
+
+                Rule::exists(
+                    'customers',
+                    'id'
+                )->where(
+                    fn ($query) =>
+                        $query->where(
+                            'business_id',
+                            auth()->user()->business_id
+                        )
                 ),
             ],
 
             'amount' => [
                 'required',
                 'numeric',
-                'min:'.$this->minimumSaleAmount(),
+                'min:' . $this->minimumSaleAmount(),
+            ],
+
+            'status_id' => [
+                'required',
+
+                Rule::exists(
+                    'sale_statuses',
+                    'id'
+                )->where(
+                    fn ($query) =>
+                        $query->where(
+                            'business_id',
+                            auth()->user()->business_id
+                        )
+                ),
             ],
         ];
     }
@@ -41,7 +61,9 @@ class UpdateSaleRequest extends FormRequest
 
         return max(
             0.01,
-            (float) $sale->payments()->sum('amount')
+            (float) $sale
+                ->payments()
+                ->sum('amount')
         );
     }
 }

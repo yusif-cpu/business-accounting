@@ -1,5 +1,14 @@
-import { useForm } from '@inertiajs/react';
+import {
+    useForm,
+} from '@inertiajs/react';
+
+import {
+    useState,
+} from 'react';
+
 import FormError from '@/components/form-error';
+import CreateSaleStatusModal from '@/components/create-sale-status-modal';
+
 import AppLayout from '@/layouts/app-layout';
 
 type Customer = {
@@ -7,34 +16,94 @@ type Customer = {
     name: string;
 };
 
+type SaleStatus = {
+    id: number;
+    name: string;
+    slug: string;
+    is_default: boolean;
+};
+
 type Sale = {
     id: number;
     customer_id: number | null;
     amount: string;
+    status_id: number;
 };
 
 type Props = {
     sale: Sale;
     customers: Customer[];
+    statuses: SaleStatus[];
 };
 
-export default function Edit({ sale, customers }: Props) {
-    const { data, setData, put, processing, errors } = useForm({
-        customer_id: sale.customer_id?.toString() ?? '',
-        amount: sale.amount,
+export default function Edit({
+    sale,
+    customers,
+    statuses: initialStatuses,
+}: Props) {
+    const [
+        statuses,
+        setStatuses,
+    ] = useState<SaleStatus[]>(
+        initialStatuses
+    );
+
+    const [
+        showStatusModal,
+        setShowStatusModal,
+    ] = useState(false);
+
+    const {
+        data,
+        setData,
+        put,
+        processing,
+        errors,
+    } = useForm({
+        customer_id:
+            sale.customer_id?.toString() ??
+            '',
+
+        amount:
+            sale.amount,
+
+        status_id:
+            sale.status_id.toString(),
     });
 
-    const submit = (event: React.FormEvent<HTMLFormElement>) => {
+    const submit = (
+        event: React.FormEvent<HTMLFormElement>
+    ) => {
         event.preventDefault();
 
-        put(`/sales/${sale.id}`);
+        put(
+            `/sales/${sale.id}`
+        );
+    };
+
+    const handleStatusCreated = (
+        status: SaleStatus
+    ) => {
+        setStatuses((current) => [
+            ...current,
+            status,
+        ]);
+
+        setData(
+            'status_id',
+            status.id.toString()
+        );
     };
 
     return (
         <AppLayout>
+
             <div className="bg-neutral-950 p-6 text-neutral-100">
+
                 <div className="mx-auto max-w-2xl space-y-6">
+
                     <div>
+
                         <a
                             href="/sales"
                             className="inline-flex items-center text-sm text-neutral-500 transition hover:text-neutral-200"
@@ -43,6 +112,7 @@ export default function Edit({ sale, customers }: Props) {
                         </a>
 
                         <div className="mt-5">
+
                             <p className="text-sm font-medium text-neutral-500">
                                 Sale #{sale.id}
                             </p>
@@ -54,12 +124,22 @@ export default function Edit({ sale, customers }: Props) {
                             <p className="mt-2 text-sm text-neutral-400">
                                 Update the sale details.
                             </p>
+
                         </div>
+
                     </div>
 
                     <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-                        <form onSubmit={submit} className="space-y-6">
+
+                        <form
+                            onSubmit={submit}
+                            className="space-y-6"
+                        >
+
+                            {/* CUSTOMER */}
+
                             <div>
+
                                 <label
                                     htmlFor="customer_id"
                                     className="text-sm font-medium text-neutral-300"
@@ -69,31 +149,53 @@ export default function Edit({ sale, customers }: Props) {
 
                                 <select
                                     id="customer_id"
-                                    value={data.customer_id}
+                                    value={
+                                        data.customer_id
+                                    }
                                     onChange={(event) =>
                                         setData(
                                             'customer_id',
-                                            event.target.value,
+                                            event.target.value
                                         )
                                     }
                                     className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 >
-                                    <option value="">No customer</option>
 
-                                    {customers.map((customer) => (
-                                        <option
-                                            key={customer.id}
-                                            value={customer.id}
-                                        >
-                                            {customer.name}
-                                        </option>
-                                    ))}
+                                    <option value="">
+                                        No customer
+                                    </option>
+
+                                    {customers.map(
+                                        (customer) => (
+                                            <option
+                                                key={
+                                                    customer.id
+                                                }
+                                                value={
+                                                    customer.id
+                                                }
+                                            >
+                                                {
+                                                    customer.name
+                                                }
+                                            </option>
+                                        )
+                                    )}
+
                                 </select>
 
-                                <FormError message={errors.customer_id} />
+                                <FormError
+                                    message={
+                                        errors.customer_id
+                                    }
+                                />
+
                             </div>
 
+                            {/* AMOUNT */}
+
                             <div>
+
                                 <label
                                     htmlFor="amount"
                                     className="text-sm font-medium text-neutral-300"
@@ -106,17 +208,98 @@ export default function Edit({ sale, customers }: Props) {
                                     type="number"
                                     step="0.01"
                                     min="0.01"
-                                    value={data.amount}
+                                    value={
+                                        data.amount
+                                    }
                                     onChange={(event) =>
-                                        setData('amount', event.target.value)
+                                        setData(
+                                            'amount',
+                                            event.target.value
+                                        )
                                     }
                                     className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                 />
 
-                                <FormError message={errors.amount} />
+                                <FormError
+                                    message={
+                                        errors.amount
+                                    }
+                                />
+
                             </div>
 
+                            {/* STATUS */}
+
+                            <div>
+
+                                <div className="flex items-center justify-between">
+
+                                    <label
+                                        htmlFor="status_id"
+                                        className="text-sm font-medium text-neutral-300"
+                                    >
+                                        Status
+                                    </label>
+
+                                    <button
+                                        type="button"
+                                        onClick={() =>
+                                            setShowStatusModal(
+                                                true
+                                            )
+                                        }
+                                        className="text-xs font-medium text-blue-400 transition hover:text-blue-300"
+                                    >
+                                        + Create new status
+                                    </button>
+
+                                </div>
+
+                                <select
+                                    id="status_id"
+                                    value={
+                                        data.status_id
+                                    }
+                                    onChange={(event) =>
+                                        setData(
+                                            'status_id',
+                                            event.target.value
+                                        )
+                                    }
+                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                >
+
+                                    {statuses.map(
+                                        (status) => (
+                                            <option
+                                                key={
+                                                    status.id
+                                                }
+                                                value={
+                                                    status.id
+                                                }
+                                            >
+                                                {
+                                                    status.name
+                                                }
+                                            </option>
+                                        )
+                                    )}
+
+                                </select>
+
+                                <FormError
+                                    message={
+                                        errors.status_id
+                                    }
+                                />
+
+                            </div>
+
+                            {/* BUTTONS */}
+
                             <div className="flex justify-end gap-3 border-t border-neutral-800 pt-5">
+
                                 <a
                                     href="/sales"
                                     className="rounded-xl border border-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800"
@@ -126,16 +309,38 @@ export default function Edit({ sale, customers }: Props) {
 
                                 <button
                                     type="submit"
-                                    disabled={processing}
+                                    disabled={
+                                        processing
+                                    }
                                     className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white disabled:opacity-50"
                                 >
-                                    {processing ? 'Saving...' : 'Save Changes'}
+                                    {processing
+                                        ? 'Saving...'
+                                        : 'Save Changes'}
                                 </button>
+
                             </div>
+
                         </form>
+
                     </div>
+
                 </div>
+
             </div>
+
+            <CreateSaleStatusModal
+                open={
+                    showStatusModal
+                }
+                onClose={() =>
+                    setShowStatusModal(false)
+                }
+                onCreated={
+                    handleStatusCreated
+                }
+            />
+
         </AppLayout>
     );
 }

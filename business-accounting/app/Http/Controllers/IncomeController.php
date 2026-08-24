@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOperationRequest;
 use App\Models\Category;
 use App\Models\Customer;
+use App\Models\Operation;
 use App\Services\OperationService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -53,10 +54,7 @@ class IncomeController extends Controller
             'business_id',
             auth()->user()->business_id
         )
-            ->where(
-                'type',
-                'income'
-            )
+            ->where('type', 'income')
             ->orderBy('name')
             ->get([
                 'id',
@@ -99,10 +97,7 @@ class IncomeController extends Controller
             'business_id',
             auth()->user()->business_id
         )
-            ->where(
-                'type',
-                'income'
-            )
+            ->where('type', 'income')
             ->orderBy('name')
             ->get([
                 'id',
@@ -137,6 +132,121 @@ class IncomeController extends Controller
             ->with(
                 'success',
                 'Income added successfully.'
+            );
+    }
+
+    public function show(int $id): Response
+    {
+        $income = Operation::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->where('type', 'income')
+            ->with([
+                'customer',
+                'category',
+            ])
+            ->findOrFail($id);
+
+        return Inertia::render(
+            'Income/Show',
+            [
+                'income' => $income,
+            ]
+        );
+    }
+
+    public function edit(int $id): Response
+    {
+        $income = Operation::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->where('type', 'income')
+            ->with([
+                'customer',
+                'category',
+            ])
+            ->findOrFail($id);
+
+        $customers = Customer::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+            ]);
+
+        $categories = Category::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->where('type', 'income')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+                'type',
+            ]);
+
+        return Inertia::render(
+            'Income/Edit',
+            [
+                'income' => $income,
+                'customers' => $customers,
+                'categories' => $categories,
+            ]
+        );
+    }
+
+    public function update(
+        StoreOperationRequest $request,
+        int $id
+    ): RedirectResponse {
+        $income = Operation::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->where('type', 'income')
+            ->findOrFail($id);
+
+        $data = $request->validated();
+
+        $data['type'] = 'income';
+
+        app(OperationService::class)
+            ->updateOperation(
+                $income,
+                $data
+            );
+
+        return redirect()
+            ->route('income.index')
+            ->with(
+                'success',
+                'Income updated successfully.'
+            );
+    }
+
+    public function destroy(int $id): RedirectResponse
+    {
+        $income = Operation::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->where('type', 'income')
+            ->findOrFail($id);
+
+        app(OperationService::class)
+            ->deleteOperation($income);
+
+        return redirect()
+            ->route('income.index')
+            ->with(
+                'success',
+                'Income deleted successfully.'
             );
     }
 }

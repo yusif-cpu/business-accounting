@@ -30,44 +30,31 @@ type Category = {
 
 type Income = {
     id: number;
-
     type: 'income';
-
     operation_date: string;
-
     currency: string;
-
     amount: string;
-
     description: string;
-
     customer: Customer | null;
-
     category: Category | null;
 };
 
 type PaginationLink = {
     url: string | null;
-
     label: string;
-
     active: boolean;
 };
 
 type Props = {
     incomes: {
         data: Income[];
-
         links: PaginationLink[];
     };
 
     summary: {
         income: number;
-
         expenses: number;
-
         balance: number;
-
         count: number;
     };
 
@@ -75,11 +62,8 @@ type Props = {
 
     filters: {
         search: string;
-
         category_id: string;
-
         start_date: string;
-
         end_date: string;
     };
 };
@@ -90,9 +74,7 @@ function SummaryCard({
     description,
 }: {
     label: string;
-
     value: string;
-
     description: string;
 }) {
     return (
@@ -122,24 +104,16 @@ export default function Index({
         useState<number | null>(null);
 
     const [search, setSearch] =
-        useState(
-            filters.search ?? ''
-        );
+        useState(filters.search ?? '');
 
     const [categoryId, setCategoryId] =
-        useState(
-            filters.category_id ?? ''
-        );
+        useState(filters.category_id ?? '');
 
     const [startDate, setStartDate] =
-        useState(
-            filters.start_date ?? ''
-        );
+        useState(filters.start_date ?? '');
 
     const [endDate, setEndDate] =
-        useState(
-            filters.end_date ?? ''
-        );
+        useState(filters.end_date ?? '');
 
     const [processingFilter, setProcessingFilter] =
         useState(false);
@@ -182,9 +156,7 @@ export default function Index({
             },
             {
                 preserveState: true,
-
                 preserveScroll: true,
-
                 replace: true,
 
                 onFinish: () => {
@@ -196,11 +168,8 @@ export default function Index({
 
     const clearFilters = () => {
         setSearch('');
-
         setCategoryId('');
-
         setStartDate('');
-
         setEndDate('');
 
         setProcessingFilter(true);
@@ -210,9 +179,7 @@ export default function Index({
             {},
             {
                 preserveState: true,
-
                 preserveScroll: true,
-
                 replace: true,
 
                 onFinish: () => {
@@ -228,7 +195,7 @@ export default function Index({
         }
 
         destroy(
-            `/operations/${deleteId}`,
+            `/income/${deleteId}`,
             {
                 onSuccess: () => {
                     setDeleteId(null);
@@ -287,8 +254,6 @@ export default function Index({
                             className="space-y-4"
                         >
 
-                            {/* SEARCH */}
-
                             <div>
                                 <label
                                     htmlFor="search"
@@ -311,11 +276,7 @@ export default function Index({
                                 />
                             </div>
 
-                            {/* FILTER ROW */}
-
                             <div className="grid gap-4 md:grid-cols-3">
-
-                                {/* CATEGORY */}
 
                                 <div>
                                     <label
@@ -333,7 +294,7 @@ export default function Index({
                                                 event.target.value
                                             )
                                         }
-                                        className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                        className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     >
                                         <option value="">
                                             All Categories
@@ -358,8 +319,6 @@ export default function Index({
                                     </select>
                                 </div>
 
-                                {/* START DATE */}
-
                                 <div>
                                     <label
                                         htmlFor="start_date"
@@ -377,11 +336,9 @@ export default function Index({
                                                 event.target.value
                                             )
                                         }
-                                        className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                        className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     />
                                 </div>
-
-                                {/* END DATE */}
 
                                 <div>
                                     <label
@@ -400,12 +357,10 @@ export default function Index({
                                                 event.target.value
                                             )
                                         }
-                                        className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
+                                        className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none focus:border-neutral-600"
                                     />
                                 </div>
                             </div>
-
-                            {/* DATE ERROR */}
 
                             {invalidDateRange && (
                                 <p className="text-sm text-red-400">
@@ -413,8 +368,6 @@ export default function Index({
                                     to the start date.
                                 </p>
                             )}
-
-                            {/* BUTTONS */}
 
                             <div className="flex flex-wrap gap-3">
 
@@ -433,9 +386,7 @@ export default function Index({
 
                                 <button
                                     type="button"
-                                    onClick={
-                                        clearFilters
-                                    }
+                                    onClick={clearFilters}
                                     disabled={
                                         processingFilter
                                     }
@@ -443,6 +394,7 @@ export default function Index({
                                 >
                                     Clear
                                 </button>
+
                             </div>
                         </form>
                     </div>
@@ -464,6 +416,7 @@ export default function Index({
                             value={summary.count.toString()}
                             description="Matching income operations"
                         />
+
                     </div>
 
                     {/* TABLE */}
@@ -483,6 +436,7 @@ export default function Index({
                                 >
                                     Create your first income
                                 </Link>
+
                             </div>
                         ) : (
                             <>
@@ -531,8 +485,6 @@ export default function Index({
                                                         className="transition hover:bg-neutral-800/30"
                                                     >
 
-                                                        {/* DESCRIPTION */}
-
                                                         <td className="px-5 py-4">
 
                                                             <p className="font-medium text-neutral-100">
@@ -549,8 +501,6 @@ export default function Index({
                                                             </p>
 
                                                         </td>
-
-                                                        {/* CATEGORY */}
 
                                                         <td className="px-5 py-4">
 
@@ -570,8 +520,6 @@ export default function Index({
 
                                                         </td>
 
-                                                        {/* CUSTOMER */}
-
                                                         <td className="px-5 py-4 text-neutral-400">
 
                                                             {income.customer?.name ??
@@ -579,22 +527,17 @@ export default function Index({
 
                                                         </td>
 
-                                                        {/* AMOUNT */}
-
                                                         <td className="px-5 py-4 font-semibold text-emerald-400">
 
                                                             +
                                                             {formatMoney(
                                                                 income.amount
                                                             )}{' '}
-
                                                             {
                                                                 income.currency
                                                             }
 
                                                         </td>
-
-                                                        {/* DATE */}
 
                                                         <td className="px-5 py-4 text-neutral-400">
 
@@ -604,21 +547,19 @@ export default function Index({
 
                                                         </td>
 
-                                                        {/* ACTIONS */}
-
                                                         <td className="px-5 py-4">
 
                                                             <div className="flex justify-end gap-4">
 
                                                                 <Link
-                                                                    href={`/operations/${income.id}`}
+                                                                    href={`/income/${income.id}`}
                                                                     className="text-neutral-300 transition hover:text-white"
                                                                 >
                                                                     View
                                                                 </Link>
 
                                                                 <Link
-                                                                    href={`/operations/${income.id}/edit`}
+                                                                    href={`/income/${income.id}/edit`}
                                                                     className="text-blue-400 transition hover:text-blue-300"
                                                                 >
                                                                     Edit
@@ -650,8 +591,6 @@ export default function Index({
                                         </tbody>
                                     </table>
                                 </div>
-
-                                {/* PAGINATION */}
 
                                 {incomes.links.length > 3 && (
                                     <div className="flex flex-wrap gap-2 border-t border-neutral-800 p-4">
@@ -695,25 +634,17 @@ export default function Index({
                 </div>
             </div>
 
-            {/* DELETE */}
-
             <DeleteConfirmation
-                open={
-                    deleteId !== null
-                }
+                open={deleteId !== null}
                 onOpenChange={(open) => {
                     if (!open) {
                         setDeleteId(null);
                     }
                 }}
                 title="Delete income?"
-                description="This income operation will be permanently deleted. This action cannot be undone."
-                onConfirm={
-                    handleDelete
-                }
-                processing={
-                    processing
-                }
+                description="This income will be permanently deleted. This action cannot be undone."
+                onConfirm={handleDelete}
+                processing={processing}
             />
         </AppLayout>
     );
