@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\BusinessController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\CustomerDocumentController;
@@ -38,6 +39,78 @@ Route::middleware([
 
     /*
     |--------------------------------------------------------------------------
+    | Business
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/businesses',
+        [
+            BusinessController::class,
+            'index',
+        ]
+    )->name(
+        'businesses.index'
+    );
+
+    Route::get(
+        '/businesses/{business}',
+        [
+            BusinessController::class,
+            'show',
+        ]
+    )->whereNumber('business')
+        ->name(
+            'businesses.show'
+    );
+
+    Route::get(
+        '/businesses/{business}/edit',
+        [
+            BusinessController::class,
+            'edit',
+        ]
+    )->whereNumber('business')
+        ->name(
+            'businesses.edit'
+    );
+
+    Route::put(
+        '/businesses/{business}',
+        [
+            BusinessController::class,
+            'update',
+        ]
+    )->whereNumber('business')
+        ->name(
+            'businesses.update'
+    );
+
+    Route::delete(
+        '/businesses/{business}',
+        [
+            BusinessController::class,
+            'destroy',
+        ]
+    )->whereNumber('business')
+        ->name(
+            'businesses.destroy'
+    );
+
+    Route::delete(
+        '/businesses/{business}/logo',
+        [
+            BusinessController::class,
+            'destroyLogo',
+        ]
+    )->whereNumber('business')
+        ->name(
+            'businesses.logo.destroy'
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
     | Sales
     |--------------------------------------------------------------------------
     */
@@ -46,6 +119,13 @@ Route::middleware([
         'sales',
         SaleController::class
     );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Sale Statuses
+    |--------------------------------------------------------------------------
+    */
 
     Route::resource(
         'sale-statuses',
@@ -294,12 +374,5 @@ Route::middleware([
         'show',
     ]);
 });
-
-
-/*
-|--------------------------------------------------------------------------
-| Settings
-|--------------------------------------------------------------------------
-*/
 
 require __DIR__.'/settings.php';

@@ -1,0 +1,13 @@
+[90m= [39m[34;4mApp\Models\Business[39;24m {#8806
+    [34mid[39m: [35m1[39m,
+    [34mbusiness_name[39m: [32m"[39m[32mBased.az[39m[32m"[39m,
+    [34mphone[39m: [32m"[39m[32m+994773666649[39m[32m"[39m,
+    [34memail[39m: [32m"[39m[32mbased@gmail.com[39m[32m"[39m,
+    [34maddress[39m: [32m"[39m[32mBaku[39m[32m"[39m,
+    [34mwebsite[39m: [32m"[39m[32mhttps://based.az/[39m[32m"[39m,
+    [34mtax_id[39m: [32m"[39m[32m527585787852[39m[32m"[39m,
+    [34mcurrency[39m: [32m"[39m[32mAZN[39m[32m"[39m,
+    [34mlogo_path[39m: [32m"[39m[32mbusiness-logos/yuaQ3vPrtQzhaFNx4lBCck6o9JokWrAZftC0NbGB.png[39m[32m"[39m,
+    [34mcreated_at[39m: [32m"[39m[32m2026-08-24 11:33:11[39m[32m"[39m,
+    [34mupdated_at[39m: [32m"[39m[32m2026-08-24 20:59:21[39m[32m"[39m,
+  }

@@ -7,7 +7,16 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Business extends Model
 {
-    protected $fillable = ['business_name'];
+    protected $fillable = [
+        'business_name',
+        'phone',
+        'email',
+        'address',
+        'website',
+        'tax_id',
+        'currency',
+        'logo_path',
+    ];
 
     public function customers(): HasMany
     {
@@ -27,5 +36,15 @@ class Business extends Model
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    public function operations(): HasMany
+    {
+        return $this->hasMany(Operation::class);
+    }
+
+    public function categories(): HasMany
+    {
+        return $this->hasMany(Category::class);
     }
 }

@@ -1,144 +1,140 @@
-import { Link } from '@inertiajs/react';
-
 import {
-    ArrowDownUp,
-    BookOpen,
-    ChartNoAxesCombined,
-    FolderGit2,
     LayoutGrid,
+    ShoppingCart,
     ListChecks,
-    ReceiptText,
-    Tags,
-    TrendingUp,
     Users,
+    TrendingUp,
+    Receipt,
+    ArrowDownUp,
+    Tags,
+    Building2,
 } from 'lucide-react';
 
-import { NavFooter } from '@/components/nav-footer';
-import { NavMain } from '@/components/nav-main';
-import { NavUser } from '@/components/nav-user';
+import { Link, usePage } from '@inertiajs/react';
 
 import {
     Sidebar,
     SidebarContent,
-    SidebarFooter,
-    SidebarHeader,
+    SidebarGroup,
+    SidebarGroupContent,
+    SidebarGroupLabel,
     SidebarMenu,
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
 
-import { dashboard } from '@/routes';
-
-import type { NavItem } from '@/types';
-
-const mainNavItems: NavItem[] = [
+const navigationItems = [
     {
         title: 'Dashboard',
-        href: dashboard(),
+        href: '/dashboard',
         icon: LayoutGrid,
     },
-
     {
         title: 'Sales',
         href: '/sales',
-        icon: ChartNoAxesCombined,
+        icon: ShoppingCart,
     },
-
     {
         title: 'Sale Statuses',
         href: '/sale-statuses',
         icon: ListChecks,
     },
-
     {
         title: 'Customers',
         href: '/customers',
         icon: Users,
     },
-
     {
         title: 'Income',
         href: '/income',
         icon: TrendingUp,
     },
-
     {
         title: 'Expenses',
         href: '/expenses',
-        icon: ReceiptText,
+        icon: Receipt,
     },
-
     {
         title: 'Operations',
         href: '/operations',
         icon: ArrowDownUp,
     },
-
     {
         title: 'Categories',
         href: '/categories',
         icon: Tags,
     },
-];
-
-const footerNavItems: NavItem[] = [
     {
-        title: 'Repository',
-        href: 'https://github.com/laravel/react-starter-kit',
-        icon: FolderGit2,
-    },
-
-    {
-        title: 'Documentation',
-        href: 'https://laravel.com/docs/starter-kits#react',
-        icon: BookOpen,
+        title: 'Business',
+        href: '/businesses',
+        icon: Building2,
     },
 ];
 
 export function AppSidebar() {
+    const { url } = usePage();
+
+    const isActive = (
+        href: string,
+    ): boolean => {
+        if (href === '/dashboard') {
+            return url === '/dashboard';
+        }
+
+        return (
+            url === href ||
+            url.startsWith(`${href}/`)
+        );
+    };
+
     return (
         <Sidebar
+            variant="sidebar"
             collapsible="icon"
-            variant="inset"
         >
-            <SidebarHeader>
-                <SidebarMenu>
-                    <SidebarMenuItem>
-                        <SidebarMenuButton
-                            size="lg"
-                            asChild
-                        >
-                            <Link
-                                href={dashboard()}
-                                prefetch
-                            >
-                                <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-sm font-bold text-white">
-                                    B
-                                </div>
-
-                                <span className="truncate text-sm font-semibold tracking-tight">
-                                    BASED.AZ
-                                </span>
-                            </Link>
-                        </SidebarMenuButton>
-                    </SidebarMenuItem>
-                </SidebarMenu>
-            </SidebarHeader>
-
             <SidebarContent>
-                <NavMain
-                    items={mainNavItems}
-                />
+                <SidebarGroup>
+                    <SidebarGroupLabel>
+                        Platform
+                    </SidebarGroupLabel>
+
+                    <SidebarGroupContent>
+                        <SidebarMenu>
+                            {navigationItems.map(
+                                (item) => (
+                                    <SidebarMenuItem
+                                        key={item.title}
+                                    >
+                                        <SidebarMenuButton
+                                            asChild
+                                            isActive={isActive(
+                                                item.href,
+                                            )}
+                                            tooltip={
+                                                item.title
+                                            }
+                                        >
+                                            <Link
+                                                href={
+                                                    item.href
+                                                }
+                                            >
+                                                <item.icon />
+
+                                                <span>
+                                                    {
+                                                        item.title
+                                                    }
+                                                </span>
+                                            </Link>
+                                        </SidebarMenuButton>
+                                    </SidebarMenuItem>
+                                ),
+                            )}
+                        </SidebarMenu>
+                    </SidebarGroupContent>
+                </SidebarGroup>
             </SidebarContent>
-
-            <SidebarFooter>
-                <NavFooter
-                    items={footerNavItems}
-                    className="mt-auto"
-                />
-
-                <NavUser />
-            </SidebarFooter>
         </Sidebar>
     );
 }
