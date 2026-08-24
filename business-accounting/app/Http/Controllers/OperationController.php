@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreOperationRequest;
 use App\Http\Requests\UpdateOperationRequest;
+use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Operation;
 use App\Services\OperationService;
@@ -35,8 +36,21 @@ class OperationController extends Controller
             ->orderBy('name')
             ->get();
 
+        $categories = Category::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'type',
+                'name',
+            ]);
+
         return Inertia::render('Operations/Create', [
             'customers' => $customers,
+            'categories' => $categories,
         ]);
     }
 
@@ -58,7 +72,10 @@ class OperationController extends Controller
         Gate::authorize('view', $operation);
 
         return Inertia::render('Operations/Show', [
-            'operation' => $operation->load('customer'),
+            'operation' => $operation->load([
+                'customer',
+                'category',
+            ]),
         ]);
     }
 
@@ -73,9 +90,25 @@ class OperationController extends Controller
             ->orderBy('name')
             ->get();
 
+        $categories = Category::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->orderBy('type')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'type',
+                'name',
+            ]);
+
         return Inertia::render('Operations/Edit', [
-            'operation' => $operation->load('customer'),
+            'operation' => $operation->load([
+                'customer',
+                'category',
+            ]),
             'customers' => $customers,
+            'categories' => $categories,
         ]);
     }
 

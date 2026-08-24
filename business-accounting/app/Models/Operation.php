@@ -14,7 +14,7 @@ class Operation extends Model
         'operation_date',
         'currency',
         'amount',
-        'category',
+        'category_id',
         'description',
         'note',
     ];
@@ -32,5 +32,10 @@ class Operation extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 }

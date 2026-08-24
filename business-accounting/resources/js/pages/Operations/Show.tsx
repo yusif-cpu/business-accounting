@@ -9,13 +9,20 @@ type Customer = {
     phone: string | null;
 };
 
+type Category = {
+    id: number;
+    business_id: number;
+    type: 'expense' | 'income';
+    name: string;
+};
+
 type Operation = {
     id: number;
     type: 'expense' | 'income';
     operation_date: string;
     currency: string;
     amount: string;
-    category: string | null;
+    category: Category | null;
     description: string;
     note: string | null;
     customer: Customer | null;
@@ -115,15 +122,19 @@ export default function Show({ operation }: Props) {
                         </div>
 
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-                            <p className="text-sm text-neutral-500">Category</p>
+                            <p className="text-sm text-neutral-500">
+                                Category
+                            </p>
 
                             <p className="mt-2 font-medium text-neutral-100">
-                                {operation.category ?? 'No category'}
+                                {operation.category?.name ?? 'No category'}
                             </p>
                         </div>
 
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
-                            <p className="text-sm text-neutral-500">Currency</p>
+                            <p className="text-sm text-neutral-500">
+                                Currency
+                            </p>
 
                             <p className="mt-2 font-medium text-neutral-100">
                                 {operation.currency}
@@ -133,16 +144,14 @@ export default function Show({ operation }: Props) {
 
                     <div className="grid gap-6 lg:grid-cols-2">
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-                            <div className="flex items-center justify-between">
-                                <div>
-                                    <h2 className="font-semibold">
-                                        Description
-                                    </h2>
+                            <div>
+                                <h2 className="font-semibold">
+                                    Description
+                                </h2>
 
-                                    <p className="mt-1 text-sm text-neutral-500">
-                                        Details about this operation.
-                                    </p>
-                                </div>
+                                <p className="mt-1 text-sm text-neutral-500">
+                                    Details about this operation.
+                                </p>
                             </div>
 
                             <div className="mt-6 rounded-xl border border-neutral-800 bg-neutral-950 p-4">

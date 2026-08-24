@@ -6,6 +6,7 @@ import {
     FolderGit2,
     LayoutGrid,
     ReceiptText,
+    Tags,
     Users,
 } from 'lucide-react';
 
@@ -49,6 +50,11 @@ const mainNavItems: NavItem[] = [
         title: 'Operations',
         href: '/operations',
         icon: ArrowDownUp,
+    },
+    {
+        title: 'Categories',
+        href: '/categories',
+        icon: Tags,
     },
 ];
 

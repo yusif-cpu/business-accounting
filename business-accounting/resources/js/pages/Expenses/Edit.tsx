@@ -2,23 +2,31 @@ import { useForm } from '@inertiajs/react';
 import FormError from '@/components/form-error';
 import AppLayout from '@/layouts/app-layout';
 
+type Category = {
+    id: number;
+    name: string;
+};
+
 type Expense = {
     id: number;
     description: string;
     amount: string;
-    category: string | null;
+    category_id: number | null;
     expense_date: string;
 };
 
 type Props = {
     expense: Expense;
+    categories: Category[];
 };
 
-export default function Edit({ expense }: Props) {
+export default function Edit({ expense, categories }: Props) {
     const { data, setData, put, processing, errors } = useForm({
         description: expense.description,
         amount: expense.amount,
-        category: expense.category ?? '',
+        category_id: expense.category_id
+            ? String(expense.category_id)
+            : '',
         expense_date: expense.expense_date.slice(0, 10),
     });
 
@@ -106,23 +114,38 @@ export default function Edit({ expense }: Props) {
 
                             <div>
                                 <label
-                                    htmlFor="category"
+                                    htmlFor="category_id"
                                     className="text-sm font-medium text-neutral-300"
                                 >
                                     Category
                                 </label>
 
-                                <input
-                                    id="category"
-                                    type="text"
-                                    value={data.category}
+                                <select
+                                    id="category_id"
+                                    value={data.category_id}
                                     onChange={(event) =>
-                                        setData('category', event.target.value)
+                                        setData(
+                                            'category_id',
+                                            event.target.value,
+                                        )
                                     }
                                     className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
-                                />
+                                >
+                                    <option value="">
+                                        Select category...
+                                    </option>
 
-                                <FormError message={errors.category} />
+                                    {categories.map((category) => (
+                                        <option
+                                            key={category.id}
+                                            value={category.id}
+                                        >
+                                            {category.name}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <FormError message={errors.category_id} />
                             </div>
 
                             <div>
@@ -162,7 +185,9 @@ export default function Edit({ expense }: Props) {
                                     disabled={processing}
                                     className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white disabled:opacity-50"
                                 >
-                                    {processing ? 'Saving...' : 'Save Changes'}
+                                    {processing
+                                        ? 'Saving...'
+                                        : 'Save Changes'}
                                 </button>
                             </div>
                         </form>

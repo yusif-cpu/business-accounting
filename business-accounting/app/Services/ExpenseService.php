@@ -9,10 +9,11 @@ class ExpenseService
 {
     public function getExpensesForCurrentBusiness(): LengthAwarePaginator
     {
-        return Expense::where(
-            'business_id',
-            auth()->user()->business_id
-        )
+        return Expense::with('category')
+            ->where(
+                'business_id',
+                auth()->user()->business_id
+            )
             ->latest('expense_date')
             ->paginate(10);
     }
@@ -25,7 +26,7 @@ class ExpenseService
             'business_id' => $businessId,
             'description' => $data['description'],
             'amount' => $data['amount'],
-            'category' => $data['category'] ?? null,
+            'category_id' => $data['category_id'] ?? null,
             'expense_date' => $data['expense_date'],
         ]);
     }
@@ -37,11 +38,11 @@ class ExpenseService
         $expense->update([
             'description' => $data['description'],
             'amount' => $data['amount'],
-            'category' => $data['category'] ?? null,
+            'category_id' => $data['category_id'] ?? null,
             'expense_date' => $data['expense_date'],
         ]);
 
-        return $expense;
+        return $expense->fresh('category');
     }
 
     public function deleteExpense(Expense $expense): void

@@ -8,13 +8,20 @@ type Customer = {
     name: string;
 };
 
+type Category = {
+    id: number;
+    business_id: number;
+    type: 'expense' | 'income';
+    name: string;
+};
+
 type Operation = {
     id: number;
     type: 'expense' | 'income';
     operation_date: string;
     currency: string;
     amount: string;
-    category: string | null;
+    category_id: number | null;
     customer_id: number | null;
     description: string;
     note: string | null;
@@ -23,15 +30,20 @@ type Operation = {
 type Props = {
     operation: Operation;
     customers: Customer[];
+    categories: Category[];
 };
 
-export default function Edit({ operation, customers }: Props) {
+export default function Edit({
+    operation,
+    customers,
+    categories,
+}: Props) {
     const { data, setData, put, processing, errors } = useForm({
         type: operation.type,
         operation_date: operation.operation_date.slice(0, 10),
         currency: operation.currency,
         amount: operation.amount,
-        category: operation.category ?? '',
+        category_id: operation.category_id?.toString() ?? '',
         customer_id: operation.customer_id?.toString() ?? '',
         description: operation.description,
         note: operation.note ?? '',
@@ -44,6 +56,18 @@ export default function Edit({ operation, customers }: Props) {
     };
 
     const isIncome = data.type === 'income';
+
+    const filteredCategories = categories.filter(
+        (category) => category.type === data.type,
+    );
+
+    const changeType = (type: 'expense' | 'income') => {
+        setData((current) => ({
+            ...current,
+            type,
+            category_id: '',
+        }));
+    };
 
     return (
         <AppLayout>
@@ -76,7 +100,7 @@ export default function Edit({ operation, customers }: Props) {
                         <div className="grid grid-cols-2 gap-3">
                             <button
                                 type="button"
-                                onClick={() => setData('type', 'expense')}
+                                onClick={() => changeType('expense')}
                                 className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                     !isIncome
                                         ? 'border-red-500/30 bg-red-500/10 text-red-400'
@@ -88,7 +112,7 @@ export default function Edit({ operation, customers }: Props) {
 
                             <button
                                 type="button"
-                                onClick={() => setData('type', 'income')}
+                                onClick={() => changeType('income')}
                                 className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                     isIncome
                                         ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
@@ -201,25 +225,42 @@ export default function Edit({ operation, customers }: Props) {
 
                                     <div>
                                         <label
-                                            htmlFor="category"
+                                            htmlFor="category_id"
                                             className="text-sm font-medium text-neutral-300"
                                         >
                                             Category
                                         </label>
 
-                                        <input
-                                            id="category"
-                                            value={data.category}
+                                        <select
+                                            id="category_id"
+                                            value={data.category_id}
                                             onChange={(event) =>
                                                 setData(
-                                                    'category',
+                                                    'category_id',
                                                     event.target.value,
                                                 )
                                             }
                                             className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
-                                        />
+                                        >
+                                            <option value="">
+                                                Select category...
+                                            </option>
 
-                                        <FormError message={errors.category} />
+                                            {filteredCategories.map(
+                                                (category) => (
+                                                    <option
+                                                        key={category.id}
+                                                        value={category.id}
+                                                    >
+                                                        {category.name}
+                                                    </option>
+                                                ),
+                                            )}
+                                        </select>
+
+                                        <FormError
+                                            message={errors.category_id}
+                                        />
                                     </div>
 
                                     <div>

@@ -8,12 +8,18 @@ type Customer = {
     name: string;
 };
 
+type Category = {
+    id: number;
+    type: 'expense' | 'income';
+    name: string;
+};
+
 type OperationFormData = {
     type: 'expense' | 'income';
     operation_date: string;
     currency: string;
     amount: string;
-    category: string;
+    category_id: string;
     customer_id: string;
     description: string;
     note: string;
@@ -21,6 +27,7 @@ type OperationFormData = {
 
 type Props = {
     customers: Customer[];
+    categories: Category[];
 };
 
 function createFormData(type: 'expense' | 'income'): OperationFormData {
@@ -29,21 +36,29 @@ function createFormData(type: 'expense' | 'income'): OperationFormData {
         operation_date: new Date().toISOString().slice(0, 10),
         currency: 'AZN',
         amount: '',
-        category: '',
+        category_id: '',
         customer_id: '',
         description: '',
         note: '',
     };
 }
 
-export default function Create({ customers }: Props) {
+export default function Create({ customers, categories }: Props) {
     const [type, setType] = useState<'expense' | 'income'>('expense');
 
-    const expenseForm = useForm<OperationFormData>(createFormData('expense'));
+    const expenseForm = useForm<OperationFormData>(
+        createFormData('expense'),
+    );
 
-    const incomeForm = useForm<OperationFormData>(createFormData('income'));
+    const incomeForm = useForm<OperationFormData>(
+        createFormData('income'),
+    );
 
     const activeForm = type === 'expense' ? expenseForm : incomeForm;
+
+    const filteredCategories = categories.filter(
+        (category) => category.type === type,
+    );
 
     const submit = () => {
         activeForm.post('/operations', {
@@ -54,6 +69,10 @@ export default function Create({ customers }: Props) {
                 activeForm.reset();
             },
         });
+    };
+
+    const changeType = (newType: 'expense' | 'income') => {
+        setType(newType);
     };
 
     return (
@@ -86,7 +105,7 @@ export default function Create({ customers }: Props) {
                     <div className="grid grid-cols-2 gap-3">
                         <button
                             type="button"
-                            onClick={() => setType('expense')}
+                            onClick={() => changeType('expense')}
                             className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                 type === 'expense'
                                     ? 'border-red-500/30 bg-red-500/10 text-red-400'
@@ -98,7 +117,7 @@ export default function Create({ customers }: Props) {
 
                         <button
                             type="button"
-                            onClick={() => setType('income')}
+                            onClick={() => changeType('income')}
                             className={`rounded-xl border px-4 py-3 text-sm font-semibold transition ${
                                 type === 'income'
                                     ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
@@ -172,11 +191,17 @@ export default function Create({ customers }: Props) {
                                             }
                                             className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         >
-                                            <option value="AZN">AZN (₼)</option>
+                                            <option value="AZN">
+                                                AZN (₼)
+                                            </option>
 
-                                            <option value="USD">USD ($)</option>
+                                            <option value="USD">
+                                                USD ($)
+                                            </option>
 
-                                            <option value="EUR">EUR (€)</option>
+                                            <option value="EUR">
+                                                EUR (€)
+                                            </option>
                                         </select>
 
                                         <FormError
@@ -216,32 +241,39 @@ export default function Create({ customers }: Props) {
 
                                 <div>
                                     <label
-                                        htmlFor="category"
+                                        htmlFor="category_id"
                                         className="text-sm font-medium text-neutral-300"
                                     >
                                         Category
                                     </label>
 
-                                    <input
-                                        id="category"
-                                        type="text"
-                                        value={activeForm.data.category}
+                                    <select
+                                        id="category_id"
+                                        value={activeForm.data.category_id}
                                         onChange={(event) =>
                                             activeForm.setData(
-                                                'category',
+                                                'category_id',
                                                 event.target.value,
                                             )
                                         }
-                                        placeholder={
-                                            type === 'expense'
-                                                ? 'Rent, Office, Utilities...'
-                                                : 'Service, Product, Salary...'
-                                        }
                                         className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
-                                    />
+                                    >
+                                        <option value="">
+                                            Select category...
+                                        </option>
+
+                                        {filteredCategories.map((category) => (
+                                            <option
+                                                key={category.id}
+                                                value={category.id}
+                                            >
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
 
                                     <FormError
-                                        message={activeForm.errors.category}
+                                        message={activeForm.errors.category_id}
                                     />
                                 </div>
 

@@ -5,15 +5,8 @@ import AppLayout from '@/layouts/app-layout';
 
 type Category = {
     id: number;
+    type: 'expense' | 'income';
     name: string;
-};
-
-type Expense = {
-    id: number;
-    description: string;
-    amount: string;
-    category: Category | null;
-    expense_date: string;
 };
 
 type PaginationLink = {
@@ -23,13 +16,13 @@ type PaginationLink = {
 };
 
 type Props = {
-    expenses: {
-        data: Expense[];
+    categories: {
+        data: Category[];
         links: PaginationLink[];
     };
 };
 
-export default function Index({ expenses }: Props) {
+export default function Index({ categories }: Props) {
     const [deleteId, setDeleteId] = useState<number | null>(null);
 
     const { delete: destroy, processing } = useForm();
@@ -39,7 +32,7 @@ export default function Index({ expenses }: Props) {
             return;
         }
 
-        destroy(`/expenses/${deleteId}`, {
+        destroy(`/categories/${deleteId}`, {
             onSuccess: () => {
                 setDeleteId(null);
             },
@@ -57,56 +50,48 @@ export default function Index({ expenses }: Props) {
                             </p>
 
                             <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-                                Expenses
+                                Categories
                             </h1>
 
                             <p className="mt-2 text-sm text-neutral-400">
-                                Manage your business expenses.
+                                Manage your income and expense categories.
                             </p>
                         </div>
 
                         <Link
-                            href="/expenses/create"
+                            href="/categories/create"
                             className="inline-flex items-center justify-center rounded-xl bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white"
                         >
-                            Create Expense
+                            Create Category
                         </Link>
                     </div>
 
                     <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
-                        {expenses.data.length === 0 ? (
+                        {categories.data.length === 0 ? (
                             <div className="p-10 text-center">
                                 <p className="text-sm text-neutral-400">
-                                    No expenses found.
+                                    No categories found.
                                 </p>
 
                                 <Link
-                                    href="/expenses/create"
+                                    href="/categories/create"
                                     className="mt-4 inline-flex rounded-xl border border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:bg-neutral-800"
                                 >
-                                    Create your first expense
+                                    Create your first category
                                 </Link>
                             </div>
                         ) : (
                             <>
                                 <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[850px] text-left text-sm">
+                                    <table className="w-full min-w-[700px] text-left text-sm">
                                         <thead className="border-b border-neutral-800">
                                             <tr>
                                                 <th className="px-5 py-4 font-medium text-neutral-500">
-                                                    Description
+                                                    Name
                                                 </th>
 
                                                 <th className="px-5 py-4 font-medium text-neutral-500">
-                                                    Category
-                                                </th>
-
-                                                <th className="px-5 py-4 font-medium text-neutral-500">
-                                                    Amount
-                                                </th>
-
-                                                <th className="px-5 py-4 font-medium text-neutral-500">
-                                                    Date
+                                                    Type
                                                 </th>
 
                                                 <th className="px-5 py-4 text-right font-medium text-neutral-500">
@@ -116,52 +101,44 @@ export default function Index({ expenses }: Props) {
                                         </thead>
 
                                         <tbody className="divide-y divide-neutral-800">
-                                            {expenses.data.map((expense) => (
+                                            {categories.data.map((category) => (
                                                 <tr
-                                                    key={expense.id}
+                                                    key={category.id}
                                                     className="transition hover:bg-neutral-800/30"
                                                 >
                                                     <td className="px-5 py-4">
-                                                        <p className="font-medium text-neutral-100">
-                                                            {
-                                                                expense.description
-                                                            }
-                                                        </p>
+                                                        <div>
+                                                            <p className="font-medium text-neutral-100">
+                                                                {category.name}
+                                                            </p>
 
-                                                        <p className="text-xs text-neutral-500">
-                                                            Expense #
-                                                            {expense.id}
-                                                        </p>
+                                                            <p className="text-xs text-neutral-500">
+                                                                Category #
+                                                                {category.id}
+                                                            </p>
+                                                        </div>
                                                     </td>
 
                                                     <td className="px-5 py-4">
-                                                        {expense.category ? (
-                                                            <span className="inline-flex rounded-full border border-neutral-700 bg-neutral-800 px-2.5 py-1 text-xs font-medium text-neutral-300">
-                                                                {
-                                                                    expense
-                                                                        .category
-                                                                        .name
-                                                                }
-                                                            </span>
-                                                        ) : (
-                                                            <span className="text-neutral-600">
-                                                                No category
-                                                            </span>
-                                                        )}
-                                                    </td>
-
-                                                    <td className="px-5 py-4 font-medium text-neutral-100">
-                                                        {expense.amount} AZN
-                                                    </td>
-
-                                                    <td className="px-5 py-4 text-neutral-400">
-                                                        {expense.expense_date}
+                                                        <span
+                                                            className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium ${
+                                                                category.type ===
+                                                                'expense'
+                                                                    ? 'border-red-900/50 bg-red-950/40 text-red-400'
+                                                                    : 'border-green-900/50 bg-green-950/40 text-green-400'
+                                                            }`}
+                                                        >
+                                                            {category.type ===
+                                                            'expense'
+                                                                ? 'Expense'
+                                                                : 'Income'}
+                                                        </span>
                                                     </td>
 
                                                     <td className="px-5 py-4">
                                                         <div className="flex justify-end gap-4">
                                                             <Link
-                                                                href={`/expenses/${expense.id}/edit`}
+                                                                href={`/categories/${category.id}/edit`}
                                                                 className="text-blue-400 transition hover:text-blue-300"
                                                             >
                                                                 Edit
@@ -174,7 +151,7 @@ export default function Index({ expenses }: Props) {
                                                                 }
                                                                 onClick={() =>
                                                                     setDeleteId(
-                                                                        expense.id,
+                                                                        category.id,
                                                                     )
                                                                 }
                                                                 className="text-red-400 transition hover:text-red-300 disabled:opacity-50"
@@ -189,9 +166,9 @@ export default function Index({ expenses }: Props) {
                                     </table>
                                 </div>
 
-                                {expenses.links.length > 3 && (
+                                {categories.links.length > 3 && (
                                     <div className="flex flex-wrap gap-2 border-t border-neutral-800 p-4">
-                                        {expenses.links.map(
+                                        {categories.links.map(
                                             (link, index) => (
                                                 <Link
                                                     key={index}
@@ -228,8 +205,8 @@ export default function Index({ expenses }: Props) {
                         setDeleteId(null);
                     }
                 }}
-                title="Delete expense?"
-                description="This expense will be permanently deleted. This action cannot be undone."
+                title="Delete category?"
+                description="This category will be permanently deleted. This action cannot be undone."
                 onConfirm={handleDelete}
                 processing={processing}
             />

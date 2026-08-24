@@ -11,7 +11,7 @@ class Expense extends Model
         'business_id',
         'description',
         'amount',
-        'category',
+        'category_id',
         'expense_date',
     ];
 
@@ -23,5 +23,10 @@ class Expense extends Model
     public function business(): BelongsTo
     {
         return $this->belongsTo(Business::class);
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
     }
 }

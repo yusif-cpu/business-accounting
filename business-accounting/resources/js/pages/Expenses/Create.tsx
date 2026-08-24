@@ -2,11 +2,20 @@ import { useForm } from '@inertiajs/react';
 import FormError from '@/components/form-error';
 import AppLayout from '@/layouts/app-layout';
 
-export default function Create() {
+type Category = {
+    id: number;
+    name: string;
+};
+
+type Props = {
+    categories: Category[];
+};
+
+export default function Create({ categories }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         description: '',
         amount: '',
-        category: '',
+        category_id: '',
         expense_date: new Date().toISOString().slice(0, 10),
     });
 
@@ -96,24 +105,38 @@ export default function Create() {
 
                             <div>
                                 <label
-                                    htmlFor="category"
+                                    htmlFor="category_id"
                                     className="text-sm font-medium text-neutral-300"
                                 >
                                     Category
                                 </label>
 
-                                <input
-                                    id="category"
-                                    type="text"
-                                    value={data.category}
+                                <select
+                                    id="category_id"
+                                    value={data.category_id}
                                     onChange={(event) =>
-                                        setData('category', event.target.value)
+                                        setData(
+                                            'category_id',
+                                            event.target.value,
+                                        )
                                     }
-                                    placeholder="Rent, Advertising, Products..."
                                     className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
-                                />
+                                >
+                                    <option value="">
+                                        Select category...
+                                    </option>
 
-                                <FormError message={errors.category} />
+                                    {categories.map((category) => (
+                                        <option
+                                            key={category.id}
+                                            value={category.id}
+                                        >
+                                            {category.name}
+                                        </option>
+                                    ))}
+                                </select>
+
+                                <FormError message={errors.category_id} />
                             </div>
 
                             <div>

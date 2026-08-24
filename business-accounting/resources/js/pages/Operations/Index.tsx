@@ -9,13 +9,20 @@ type Customer = {
     name: string;
 };
 
+type Category = {
+    id: number;
+    business_id: number;
+    type: 'expense' | 'income';
+    name: string;
+};
+
 type Operation = {
     id: number;
     type: 'expense' | 'income';
     operation_date: string;
     currency: string;
     amount: string;
-    category: string | null;
+    category: Category | null;
     description: string;
     customer: Customer | null;
 };
@@ -161,8 +168,8 @@ export default function Index({ operations }: Props) {
                                                         </td>
 
                                                         <td className="px-5 py-4 text-neutral-400">
-                                                            {operation.category ??
-                                                                '—'}
+                                                            {operation.category
+                                                                ?.name ?? '—'}
                                                         </td>
 
                                                         <td className="px-5 py-4 text-neutral-400">
@@ -232,26 +239,28 @@ export default function Index({ operations }: Props) {
 
                                 {operations.links.length > 3 && (
                                     <div className="flex flex-wrap gap-2 border-t border-neutral-800 p-4">
-                                        {operations.links.map((link, index) => (
-                                            <Link
-                                                key={index}
-                                                href={link.url ?? '#'}
-                                                preserveScroll
-                                                className={`rounded-lg border px-3 py-2 text-sm transition ${
-                                                    link.active
-                                                        ? 'border-neutral-600 bg-neutral-100 text-neutral-950'
-                                                        : link.url
-                                                          ? 'border-neutral-800 bg-neutral-900 text-neutral-300 hover:bg-neutral-800'
-                                                          : 'cursor-not-allowed border-neutral-900 text-neutral-600'
-                                                }`}
-                                            >
-                                                <span
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: link.label,
-                                                    }}
-                                                />
-                                            </Link>
-                                        ))}
+                                        {operations.links.map(
+                                            (link, index) => (
+                                                <Link
+                                                    key={index}
+                                                    href={link.url ?? '#'}
+                                                    preserveScroll
+                                                    className={`rounded-lg border px-3 py-2 text-sm transition ${
+                                                        link.active
+                                                            ? 'border-neutral-600 bg-neutral-100 text-neutral-950'
+                                                            : link.url
+                                                              ? 'border-neutral-800 bg-neutral-900 text-neutral-300 hover:bg-neutral-800'
+                                                              : 'cursor-not-allowed border-neutral-900 text-neutral-600'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: link.label,
+                                                        }}
+                                                    />
+                                                </Link>
+                                            ),
+                                        )}
                                     </div>
                                 )}
                             </>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreExpenseRequest;
 use App\Http\Requests\UpdateExpenseRequest;
+use App\Models\Category;
 use App\Models\Expense;
 use App\Services\ExpenseService;
 use Illuminate\Http\RedirectResponse;
@@ -29,7 +30,20 @@ class ExpenseController extends Controller
 
     public function create(): Response
     {
-        return Inertia::render('Expenses/Create');
+        $categories = Category::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->where('type', 'expense')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+            ]);
+
+        return Inertia::render('Expenses/Create', [
+            'categories' => $categories,
+        ]);
     }
 
     public function store(
@@ -49,8 +63,20 @@ class ExpenseController extends Controller
     {
         Gate::authorize('update', $expense);
 
+        $categories = Category::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->where('type', 'expense')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+            ]);
+
         return Inertia::render('Expenses/Edit', [
-            'expense' => $expense,
+            'expense' => $expense->load('category'),
+            'categories' => $categories,
         ]);
     }
 

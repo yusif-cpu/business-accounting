@@ -9,7 +9,10 @@ class OperationService
 {
     public function getOperationsForCurrentBusiness(): LengthAwarePaginator
     {
-        return Operation::with('customer')
+        return Operation::with([
+            'customer',
+            'category',
+        ])
             ->where(
                 'business_id',
                 auth()->user()->business_id
@@ -30,7 +33,7 @@ class OperationService
             'operation_date' => $data['operation_date'],
             'currency' => strtoupper($data['currency']),
             'amount' => $data['amount'],
-            'category' => $data['category'] ?? null,
+            'category_id' => $data['category_id'] ?? null,
             'description' => $data['description'],
             'note' => $data['note'] ?? null,
         ]);
@@ -46,12 +49,15 @@ class OperationService
             'operation_date' => $data['operation_date'],
             'currency' => strtoupper($data['currency']),
             'amount' => $data['amount'],
-            'category' => $data['category'] ?? null,
+            'category_id' => $data['category_id'] ?? null,
             'description' => $data['description'],
             'note' => $data['note'] ?? null,
         ]);
 
-        return $operation->fresh('customer');
+        return $operation->fresh([
+            'customer',
+            'category',
+        ]);
     }
 
     public function deleteOperation(Operation $operation): void
