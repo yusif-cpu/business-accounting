@@ -1,5 +1,14 @@
-import { Link } from '@inertiajs/react';
-import { useMemo, useState } from 'react';
+import {
+    Link,
+} from '@inertiajs/react';
+
+import {
+    useMemo,
+    useState,
+} from 'react';
+
+import CustomerDocuments from '@/components/customer-documents';
+
 import AppLayout from '@/layouts/app-layout';
 
 type Category = {
@@ -19,12 +28,22 @@ type Operation = {
     category: Category | null;
 };
 
+type CustomerDocument = {
+    id: number;
+    name: string;
+    file_path: string;
+    mime_type: string;
+    file_size: number;
+    created_at: string;
+};
+
 type Customer = {
     id: number;
     name: string;
     email: string | null;
     phone: string | null;
     operations: Operation[];
+    documents: CustomerDocument[];
 };
 
 type Props = {
@@ -34,14 +53,28 @@ type Props = {
     balance: number | string;
 };
 
-type OperationFilter = 'all' | 'income' | 'expense';
+type OperationFilter =
+    | 'all'
+    | 'income'
+    | 'expense';
 
-function formatDate(date: string) {
-    const value = date.slice(0, 10);
+function formatDate(
+    date: string
+) {
+    const value =
+        date.slice(0, 10);
 
-    const [year, month, day] = value.split('-');
+    const [
+        year,
+        month,
+        day,
+    ] = value.split('-');
 
-    if (!year || !month || !day) {
+    if (
+        !year ||
+        !month ||
+        !day
+    ) {
         return date;
     }
 
@@ -61,28 +94,43 @@ export default function Show({
     totalExpenses,
     balance,
 }: Props) {
-    const [filter, setFilter] =
-        useState<OperationFilter>('all');
+    const [
+        filter,
+        setFilter,
+    ] = useState<OperationFilter>(
+        'all'
+    );
 
-    const filteredOperations = useMemo(() => {
-        if (filter === 'all') {
-            return customer.operations;
-        }
+    const filteredOperations =
+        useMemo(() => {
+            if (
+                filter ===
+                'all'
+            ) {
+                return customer.operations;
+            }
 
-        return customer.operations.filter(
-            (operation) =>
-                operation.type === filter,
-        );
-    }, [customer.operations, filter]);
+            return customer.operations.filter(
+                (operation) =>
+                    operation.type ===
+                    filter
+            );
+        }, [
+            customer.operations,
+            filter,
+        ]);
 
     return (
         <AppLayout>
+
             <div className="min-h-full bg-neutral-950 p-6 text-neutral-100">
+
                 <div className="mx-auto max-w-7xl space-y-6">
 
                     {/* HEADER */}
 
                     <div>
+
                         <Link
                             href="/customers"
                             className="inline-flex items-center text-sm text-neutral-500 transition hover:text-neutral-200"
@@ -91,7 +139,9 @@ export default function Show({
                         </Link>
 
                         <div className="mt-5 flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+
                             <div className="flex items-center gap-4">
+
                                 <div className="flex size-14 shrink-0 items-center justify-center rounded-2xl bg-neutral-800 text-xl font-semibold text-neutral-300">
                                     {customer.name
                                         .charAt(0)
@@ -99,6 +149,7 @@ export default function Show({
                                 </div>
 
                                 <div>
+
                                     <p className="text-sm font-medium text-neutral-500">
                                         Customer #{customer.id}
                                     </p>
@@ -110,7 +161,9 @@ export default function Show({
                                     <p className="mt-1 text-sm text-neutral-500">
                                         Customer overview
                                     </p>
+
                                 </div>
+
                             </div>
 
                             <Link
@@ -119,13 +172,17 @@ export default function Show({
                             >
                                 Edit Customer
                             </Link>
+
                         </div>
+
                     </div>
 
                     {/* CUSTOMER INFO */}
 
                     <div className="grid gap-4 md:grid-cols-3">
+
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+
                             <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
                                 Email
                             </p>
@@ -134,9 +191,11 @@ export default function Show({
                                 {customer.email ??
                                     'Not provided'}
                             </p>
+
                         </div>
 
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+
                             <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
                                 Phone
                             </p>
@@ -145,9 +204,11 @@ export default function Show({
                                 {customer.phone ??
                                     'Not provided'}
                             </p>
+
                         </div>
 
                         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+
                             <p className="text-xs font-medium uppercase tracking-wide text-neutral-500">
                                 Operations
                             </p>
@@ -155,13 +216,17 @@ export default function Show({
                             <p className="mt-2 text-2xl font-semibold text-neutral-100">
                                 {customer.operations.length}
                             </p>
+
                         </div>
+
                     </div>
 
                     {/* FINANCIAL SUMMARY */}
 
                     <div>
+
                         <div className="mb-4">
+
                             <h2 className="text-base font-semibold">
                                 Financial summary
                             </h2>
@@ -169,6 +234,7 @@ export default function Show({
                             <p className="mt-1 text-sm text-neutral-500">
                                 Overview of this customer's financial activity.
                             </p>
+
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-3">
@@ -176,6 +242,7 @@ export default function Show({
                             {/* INCOME */}
 
                             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5">
+
                                 <p className="text-sm font-medium text-neutral-400">
                                     Total Income
                                 </p>
@@ -183,14 +250,16 @@ export default function Show({
                                 <p className="mt-3 text-2xl font-semibold text-emerald-400">
                                     +₼
                                     {Number(
-                                        totalIncome,
+                                        totalIncome
                                     ).toFixed(2)}
                                 </p>
+
                             </div>
 
                             {/* EXPENSES */}
 
                             <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-5">
+
                                 <p className="text-sm font-medium text-neutral-400">
                                     Total Expenses
                                 </p>
@@ -198,14 +267,16 @@ export default function Show({
                                 <p className="mt-3 text-2xl font-semibold text-red-400">
                                     -₼
                                     {Number(
-                                        totalExpenses,
+                                        totalExpenses
                                     ).toFixed(2)}
                                 </p>
+
                             </div>
 
                             {/* BALANCE */}
 
                             <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+
                                 <p className="text-sm font-medium text-neutral-400">
                                     Balance
                                 </p>
@@ -224,11 +295,14 @@ export default function Show({
                                         : '-'}
                                     ₼
                                     {Math.abs(
-                                        Number(balance),
+                                        Number(balance)
                                     ).toFixed(2)}
                                 </p>
+
                             </div>
+
                         </div>
+
                     </div>
 
                     {/* OPERATIONS */}
@@ -238,7 +312,9 @@ export default function Show({
                         {/* OPERATIONS HEADER */}
 
                         <div className="flex flex-col gap-4 border-b border-neutral-800 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+
                             <div>
+
                                 <h2 className="font-semibold">
                                     Operations
                                 </h2>
@@ -246,15 +322,19 @@ export default function Show({
                                 <p className="mt-1 text-sm text-neutral-500">
                                     Financial operations associated with this customer.
                                 </p>
+
                             </div>
 
                             {/* FILTER */}
 
                             <div className="flex rounded-xl border border-neutral-800 bg-neutral-950 p-1">
+
                                 <button
                                     type="button"
                                     onClick={() =>
-                                        setFilter('all')
+                                        setFilter(
+                                            'all'
+                                        )
                                     }
                                     className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
                                         filter ===
@@ -270,7 +350,7 @@ export default function Show({
                                     type="button"
                                     onClick={() =>
                                         setFilter(
-                                            'income',
+                                            'income'
                                         )
                                     }
                                     className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
@@ -287,7 +367,7 @@ export default function Show({
                                     type="button"
                                     onClick={() =>
                                         setFilter(
-                                            'expense',
+                                            'expense'
                                         )
                                     }
                                     className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
@@ -299,14 +379,18 @@ export default function Show({
                                 >
                                     Expense
                                 </button>
+
                             </div>
+
                         </div>
 
                         {/* OPERATIONS TABLE */}
 
                         {filteredOperations.length ===
                         0 ? (
+
                             <div className="p-10 text-center">
+
                                 <p className="text-sm text-neutral-500">
                                     {filter ===
                                     'all'
@@ -320,12 +404,19 @@ export default function Show({
                                 >
                                     Create Operation
                                 </Link>
+
                             </div>
+
                         ) : (
+
                             <div className="overflow-x-auto">
+
                                 <table className="w-full min-w-[850px] text-left text-sm">
+
                                     <thead className="border-b border-neutral-800">
+
                                         <tr>
+
                                             <th className="px-6 py-4 font-medium text-neutral-500">
                                                 Date
                                             </th>
@@ -345,27 +436,33 @@ export default function Show({
                                             <th className="px-6 py-4 text-right font-medium text-neutral-500">
                                                 Amount
                                             </th>
+
                                         </tr>
+
                                     </thead>
 
                                     <tbody className="divide-y divide-neutral-800">
+
                                         {filteredOperations.map(
                                             (
-                                                operation,
+                                                operation
                                             ) => (
+
                                                 <tr
                                                     key={
                                                         operation.id
                                                     }
                                                     className="transition hover:bg-neutral-800/30"
                                                 >
+
                                                     <td className="px-6 py-4 text-neutral-300">
                                                         {formatDate(
-                                                            operation.operation_date,
+                                                            operation.operation_date
                                                         )}
                                                     </td>
 
                                                     <td className="px-6 py-4">
+
                                                         <span
                                                             className={`inline-flex rounded-full px-2.5 py-1 text-xs font-semibold ${
                                                                 operation.type ===
@@ -379,6 +476,7 @@ export default function Show({
                                                                 ? 'Income'
                                                                 : 'Expense'}
                                                         </span>
+
                                                     </td>
 
                                                     <td className="px-6 py-4 text-neutral-300">
@@ -389,7 +487,9 @@ export default function Show({
                                                     </td>
 
                                                     <td className="px-6 py-4">
+
                                                         <div>
+
                                                             <p className="font-medium text-neutral-200">
                                                                 {
                                                                     operation.description
@@ -403,7 +503,9 @@ export default function Show({
                                                                     }
                                                                 </p>
                                                             )}
+
                                                         </div>
+
                                                     </td>
 
                                                     <td
@@ -420,19 +522,40 @@ export default function Show({
                                                             : '-'}
                                                         {formatAmount(
                                                             operation.amount,
-                                                            operation.currency,
+                                                            operation.currency
                                                         )}
                                                     </td>
+
                                                 </tr>
-                                            ),
+
+                                            )
                                         )}
+
                                     </tbody>
+
                                 </table>
+
                             </div>
+
                         )}
+
                     </div>
+
+                    {/* DOCUMENTS */}
+
+                    <CustomerDocuments
+                        customerId={
+                            customer.id
+                        }
+                        documents={
+                            customer.documents
+                        }
+                    />
+
                 </div>
+
             </div>
+
         </AppLayout>
     );
 }

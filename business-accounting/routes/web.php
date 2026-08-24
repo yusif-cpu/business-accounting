@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CustomerController;
+use App\Http\Controllers\CustomerDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
@@ -11,22 +12,20 @@ use App\Http\Controllers\SaleController;
 use App\Http\Controllers\SaleStatusController;
 use Illuminate\Support\Facades\Route;
 
-Route::inertia(
-    '/',
-    'welcome'
-)->name('home');
+Route::get('/', function () {
+    return redirect()->route('dashboard');
+})->name('home');
 
 Route::middleware([
     'auth',
     'verified',
 ])->group(function () {
-    Route::inertia(
-        'dashboard',
-        'dashboard'
-    )->name('dashboard');
-});
 
-Route::middleware('auth')->group(function () {
+    /*
+    |--------------------------------------------------------------------------
+    | Dashboard
+    |--------------------------------------------------------------------------
+    */
 
     Route::get(
         '/dashboard',
@@ -35,6 +34,7 @@ Route::middleware('auth')->group(function () {
             'index',
         ]
     )->name('dashboard');
+
 
     /*
     |--------------------------------------------------------------------------
@@ -55,14 +55,15 @@ Route::middleware('auth')->group(function () {
     ]);
 
     Route::post(
-    '/sale-statuses/inline',
-    [
-        SaleStatusController::class,
-        'inlineStore',
-    ]
+        '/sale-statuses/inline',
+        [
+            SaleStatusController::class,
+            'inlineStore',
+        ]
     )->name(
         'sale-statuses.inline-store'
     );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -74,6 +75,54 @@ Route::middleware('auth')->group(function () {
         'customers',
         CustomerController::class
     );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Customer Documents
+    |--------------------------------------------------------------------------
+    */
+
+    Route::post(
+        '/customer-documents',
+        [
+            CustomerDocumentController::class,
+            'store',
+        ]
+    )->name(
+        'customer-documents.store'
+    );
+
+    Route::get(
+        '/customer-documents/{customerDocument}/preview',
+        [
+            CustomerDocumentController::class,
+            'preview',
+        ]
+    )->name(
+        'customer-documents.preview'
+    );
+
+    Route::get(
+        '/customer-documents/{customerDocument}/download',
+        [
+            CustomerDocumentController::class,
+            'download',
+        ]
+    )->name(
+        'customer-documents.download'
+    );
+
+    Route::delete(
+        '/customer-documents/{customerDocument}',
+        [
+            CustomerDocumentController::class,
+            'destroy',
+        ]
+    )->name(
+        'customer-documents.destroy'
+    );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -87,7 +136,9 @@ Route::middleware('auth')->group(function () {
             IncomeController::class,
             'index',
         ]
-    )->name('income.index');
+    )->name(
+        'income.index'
+    );
 
     Route::get(
         '/income/create',
@@ -95,7 +146,9 @@ Route::middleware('auth')->group(function () {
             IncomeController::class,
             'create',
         ]
-    )->name('income.create');
+    )->name(
+        'income.create'
+    );
 
     Route::post(
         '/income',
@@ -103,7 +156,9 @@ Route::middleware('auth')->group(function () {
             IncomeController::class,
             'store',
         ]
-    )->name('income.store');
+    )->name(
+        'income.store'
+    );
 
     Route::get(
         '/income/{id}',
@@ -111,7 +166,9 @@ Route::middleware('auth')->group(function () {
             IncomeController::class,
             'show',
         ]
-    )->name('income.show');
+    )->name(
+        'income.show'
+    );
 
     Route::get(
         '/income/{id}/edit',
@@ -119,7 +176,9 @@ Route::middleware('auth')->group(function () {
             IncomeController::class,
             'edit',
         ]
-    )->name('income.edit');
+    )->name(
+        'income.edit'
+    );
 
     Route::put(
         '/income/{id}',
@@ -127,7 +186,9 @@ Route::middleware('auth')->group(function () {
             IncomeController::class,
             'update',
         ]
-    )->name('income.update');
+    )->name(
+        'income.update'
+    );
 
     Route::delete(
         '/income/{id}',
@@ -135,7 +196,10 @@ Route::middleware('auth')->group(function () {
             IncomeController::class,
             'destroy',
         ]
-    )->name('income.destroy');
+    )->name(
+        'income.destroy'
+    );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -150,6 +214,7 @@ Route::middleware('auth')->group(function () {
         'show',
     ]);
 
+
     /*
     |--------------------------------------------------------------------------
     | Payments
@@ -162,7 +227,9 @@ Route::middleware('auth')->group(function () {
             PaymentController::class,
             'create',
         ]
-    )->name('payments.create');
+    )->name(
+        'payments.create'
+    );
 
     Route::post(
         '/sales/{sale}/payments',
@@ -170,7 +237,9 @@ Route::middleware('auth')->group(function () {
             PaymentController::class,
             'store',
         ]
-    )->name('payments.store');
+    )->name(
+        'payments.store'
+    );
 
     Route::delete(
         '/payments/{payment}',
@@ -178,7 +247,10 @@ Route::middleware('auth')->group(function () {
             PaymentController::class,
             'destroy',
         ]
-    )->name('payments.destroy');
+    )->name(
+        'payments.destroy'
+    );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -190,6 +262,7 @@ Route::middleware('auth')->group(function () {
         'operations',
         OperationController::class
     );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -203,7 +276,10 @@ Route::middleware('auth')->group(function () {
             CategoryController::class,
             'storeInline',
         ]
-    )->name('categories.inline');
+    )->name(
+        'categories.inline'
+    );
+
 
     /*
     |--------------------------------------------------------------------------
@@ -218,5 +294,12 @@ Route::middleware('auth')->group(function () {
         'show',
     ]);
 });
+
+
+/*
+|--------------------------------------------------------------------------
+| Settings
+|--------------------------------------------------------------------------
+*/
 
 require __DIR__.'/settings.php';

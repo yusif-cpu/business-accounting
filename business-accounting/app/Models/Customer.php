@@ -29,4 +29,11 @@ class Customer extends Model
     {
         return $this->hasMany(Operation::class);
     }
+
+    public function documents(): HasMany
+    {
+        return $this->hasMany(
+            CustomerDocument::class
+        );
+    }
 }
