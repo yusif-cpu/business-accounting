@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\DashboardFilterRequest;
 use App\Services\DashboardService;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -13,23 +13,34 @@ class DashboardController extends Controller
         private DashboardService $dashboardService
     ) {}
 
-    public function index(Request $request): Response
-    {
-        $startDate = $request->input('start_date');
-        $endDate = $request->input('end_date');
+    public function index(
+        DashboardFilterRequest $request
+    ): Response {
+        $filters =
+            $request->filters();
 
-        $data = $this->dashboardService->getDashboardData(
-            auth()->user()->business_id,
-            $startDate,
-            $endDate
+        $data =
+            $this->dashboardService
+                ->getDashboardData(
+                    auth()->user()->business_id,
+                    $filters['start_date'],
+                    $filters['end_date']
+                );
+
+        return Inertia::render(
+            'dashboard',
+            [
+                'data' =>
+                    $data,
+
+                'filters' => [
+                    'start_date' =>
+                        $filters['start_date'] ?? '',
+
+                    'end_date' =>
+                        $filters['end_date'] ?? '',
+                ],
+            ]
         );
-
-        return Inertia::render('dashboard', [
-            'data' => $data,
-            'filters' => [
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-            ],
-        ]);
     }
 }

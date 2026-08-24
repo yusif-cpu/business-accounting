@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\SaleFilterRequest;
 use App\Http\Requests\StoreSaleRequest;
 use App\Http\Requests\UpdateSaleRequest;
 use App\Models\Customer;
@@ -9,7 +10,6 @@ use App\Models\Sale;
 use App\Models\SaleStatus;
 use App\Services\SaleService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
@@ -21,54 +21,32 @@ class SaleController extends Controller
     ) {}
 
     public function index(
-        Request $request
+        SaleFilterRequest $request
     ): Response {
         $businessId =
             auth()->user()->business_id;
 
-        $search =
-            $request->string(
-                'search'
-            )->trim()->toString();
-
-        $customerId =
-            $request->string(
-                'customer_id'
-            )->toString();
-
-        $statusId =
-            $request->string(
-                'status_id'
-            )->toString();
-
-        $startDate =
-            $request->string(
-                'start_date'
-            )->toString();
-
-        $endDate =
-            $request->string(
-                'end_date'
-            )->toString();
+        $filters =
+            $request->filters();
 
         $sales =
             $this->saleService
                 ->getSalesForCurrentBusiness(
-                    $search ?: null,
-                    $customerId ?: null,
-                    $statusId ?: null,
-                    $startDate ?: null,
-                    $endDate ?: null
+                    $filters['search'],
+                    $filters['customer_id'],
+                    $filters['status_id'],
+                    $filters['start_date'],
+                    $filters['end_date']
                 );
 
         $summary =
             $this->saleService
                 ->getSalesSummary(
-                    $search ?: null,
-                    $customerId ?: null,
-                    $statusId ?: null,
-                    $startDate ?: null,
-                    $endDate ?: null
+                    $filters['search'],
+                    $filters['customer_id'],
+                    $filters['status_id'],
+                    $filters['start_date'],
+                    $filters['end_date']
                 );
 
         $customers = Customer::where(
@@ -111,19 +89,23 @@ class SaleController extends Controller
 
                 'filters' => [
                     'search' =>
-                        $search,
+                        $filters['search'] ?? '',
 
                     'customer_id' =>
-                        $customerId,
+                        $filters['customer_id']
+                            ? (string) $filters['customer_id']
+                            : '',
 
                     'status_id' =>
-                        $statusId,
+                        $filters['status_id']
+                            ? (string) $filters['status_id']
+                            : '',
 
                     'start_date' =>
-                        $startDate,
+                        $filters['start_date'] ?? '',
 
                     'end_date' =>
-                        $endDate,
+                        $filters['end_date'] ?? '',
                 ],
             ]
         );

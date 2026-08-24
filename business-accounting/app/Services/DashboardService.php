@@ -153,6 +153,22 @@ class DashboardService
 
         /*
         |--------------------------------------------------------------------------
+        | Profit
+        |--------------------------------------------------------------------------
+        |
+        | Total sales
+        | + Other income
+        | - Expenses
+        |
+        */
+
+        $profit =
+            $totalSales +
+            $totalIncome -
+            $expenses;
+
+        /*
+        |--------------------------------------------------------------------------
         | Return Dashboard Data
         |--------------------------------------------------------------------------
         */
@@ -177,7 +193,7 @@ class DashboardService
                 $netBalance,
 
             'profit' =>
-                $netBalance,
+                $profit,
 
             'salesCount' =>
                 $salesCount,

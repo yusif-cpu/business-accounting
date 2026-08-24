@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ExpenseFilterRequest;
 use App\Http\Requests\StoreExpenseRequest;
 use App\Http\Requests\UpdateExpenseRequest;
 use App\Models\Category;
@@ -18,63 +19,73 @@ class ExpenseController extends Controller
         private ExpenseService $expenseService
     ) {}
 
-    public function index(): Response
-    {
-        $search = request()->string('search')->toString();
+    public function index(
+        ExpenseFilterRequest $request
+    ): Response {
+        $filters =
+            $request->filters();
 
-        $categoryId = request()
-            ->string('category_id')
-            ->toString();
+        $expenses =
+            $this->expenseService
+                ->getExpensesForCurrentBusiness(
+                    $filters['search'],
+                    $filters['category_id'],
+                    $filters['start_date'],
+                    $filters['end_date']
+                );
 
-        $startDate = request()
-            ->string('start_date')
-            ->toString();
-
-        $endDate = request()
-            ->string('end_date')
-            ->toString();
-
-        $expenses = $this->expenseService
-            ->getExpensesForCurrentBusiness(
-                $search ?: null,
-                $categoryId ?: null,
-                $startDate ?: null,
-                $endDate ?: null
-            );
-
-        $summary = $this->expenseService
-            ->getExpenseSummary(
-                $search ?: null,
-                $categoryId ?: null,
-                $startDate ?: null,
-                $endDate ?: null
-            );
+        $summary =
+            $this->expenseService
+                ->getExpenseSummary(
+                    $filters['search'],
+                    $filters['category_id'],
+                    $filters['start_date'],
+                    $filters['end_date']
+                );
 
         $categories = Category::where(
             'business_id',
             auth()->user()->business_id
         )
-            ->where('type', 'expense')
+            ->where(
+                'type',
+                'expense'
+            )
             ->orderBy('name')
             ->get([
                 'id',
                 'name',
             ]);
 
-        return Inertia::render('Expenses/Index', [
-            'expenses' => $expenses,
+        return Inertia::render(
+            'Expenses/Index',
+            [
+                'expenses' =>
+                    $expenses,
 
-            'summary' => $summary,
+                'summary' =>
+                    $summary,
 
-            'categories' => $categories,
+                'categories' =>
+                    $categories,
 
-            'filters' => [
-                'search' => $search,
-                'category_id' => $categoryId,
-                'start_date' => $startDate,
-                'end_date' => $endDate,
-            ],
-        ]);
+                'filters' => [
+                    'search' =>
+                        $filters['search'] ?? '',
+
+                    'category_id' =>
+                        $filters['category_id']
+                            ? (string) $filters['category_id']
+                            : '',
+
+                    'start_date' =>
+                        $filters['start_date'] ?? '',
+
+                    'end_date' =>
+                        $filters['end_date'] ?? '',
+                ],
+            ]
+        );
     }
 
     public function create(): Response
@@ -83,76 +94,119 @@ class ExpenseController extends Controller
             'business_id',
             auth()->user()->business_id
         )
-            ->where('type', 'expense')
+            ->where(
+                'type',
+                'expense'
+            )
             ->orderBy('name')
             ->get([
                 'id',
                 'name',
             ]);
 
-        return Inertia::render('Expenses/Create', [
-            'categories' => $categories,
-        ]);
+        return Inertia::render(
+            'Expenses/Create',
+            [
+                'categories' =>
+                    $categories,
+            ]
+        );
     }
 
     public function store(
         StoreExpenseRequest $request
     ): RedirectResponse {
-        $this->expenseService->createExpense(
-            auth()->user()->business_id,
-            $request->validated()
-        );
+        $this->expenseService
+            ->createExpense(
+                auth()->user()->business_id,
+                $request->validated()
+            );
 
         return redirect()
             ->route('expenses.index')
-            ->with('success', 'Expense created successfully.');
+            ->with(
+                'success',
+                'Expense created successfully.'
+            );
     }
 
-    public function edit(Expense $expense): Response
-    {
-        Gate::authorize('update', $expense);
+    public function edit(
+        Expense $expense
+    ): Response {
+        Gate::authorize(
+            'update',
+            $expense
+        );
 
         $categories = Category::where(
             'business_id',
             auth()->user()->business_id
         )
-            ->where('type', 'expense')
+            ->where(
+                'type',
+                'expense'
+            )
             ->orderBy('name')
             ->get([
                 'id',
                 'name',
             ]);
 
-        return Inertia::render('Expenses/Edit', [
-            'expense' => $expense->load('category'),
-            'categories' => $categories,
-        ]);
+        return Inertia::render(
+            'Expenses/Edit',
+            [
+                'expense' =>
+                    $expense->load(
+                        'category'
+                    ),
+
+                'categories' =>
+                    $categories,
+            ]
+        );
     }
 
     public function update(
         UpdateExpenseRequest $request,
         Expense $expense
     ): RedirectResponse {
-        Gate::authorize('update', $expense);
-
-        $this->expenseService->updateExpense(
-            $expense,
-            $request->validated()
+        Gate::authorize(
+            'update',
+            $expense
         );
 
+        $this->expenseService
+            ->updateExpense(
+                $expense,
+                $request->validated()
+            );
+
         return redirect()
             ->route('expenses.index')
-            ->with('success', 'Expense updated successfully.');
+            ->with(
+                'success',
+                'Expense updated successfully.'
+            );
     }
 
-    public function destroy(Expense $expense): RedirectResponse
-    {
-        Gate::authorize('delete', $expense);
+    public function destroy(
+        Expense $expense
+    ): RedirectResponse {
+        Gate::authorize(
+            'delete',
+            $expense
+        );
 
-        $this->expenseService->deleteExpense($expense);
+        $this->expenseService
+            ->deleteExpense(
+                $expense
+            );
 
         return redirect()
             ->route('expenses.index')
-            ->with('success', 'Expense deleted successfully.');
+            ->with(
+                'success',
+                'Expense deleted successfully.'
+            );
     }
 }

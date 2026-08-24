@@ -2,53 +2,46 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\IncomeFilterRequest;
 use App\Http\Requests\StoreOperationRequest;
 use App\Models\Category;
 use App\Models\Customer;
 use App\Models\Operation;
 use App\Services\OperationService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Inertia\Response;
 
 class IncomeController extends Controller
 {
-    public function index(Request $request): Response
-    {
-        $search = $request
-            ->string('search')
-            ->toString();
+    public function index(
+        IncomeFilterRequest $request
+    ): Response {
+        $filters =
+            $request->filters();
 
-        $categoryId = $request
-            ->string('category_id')
-            ->toString();
+        $operationService =
+            app(OperationService::class);
 
-        $startDate = $request
-            ->string('start_date')
-            ->toString();
+        $incomes =
+            $operationService
+                ->getOperationsForCurrentBusiness(
+                    $filters['search'],
+                    'income',
+                    $filters['start_date'],
+                    $filters['end_date'],
+                    $filters['category_id']
+                );
 
-        $endDate = $request
-            ->string('end_date')
-            ->toString();
-
-        $incomes = app(OperationService::class)
-            ->getOperationsForCurrentBusiness(
-                $search ?: null,
-                'income',
-                $startDate ?: null,
-                $endDate ?: null,
-                $categoryId ?: null
-            );
-
-        $summary = app(OperationService::class)
-            ->getOperationSummary(
-                $search ?: null,
-                'income',
-                $startDate ?: null,
-                $endDate ?: null,
-                $categoryId ?: null
-            );
+        $summary =
+            $operationService
+                ->getOperationSummary(
+                    $filters['search'],
+                    'income',
+                    $filters['start_date'],
+                    $filters['end_date'],
+                    $filters['category_id']
+                );
 
         $categories = Category::where(
             'business_id',
@@ -65,17 +58,29 @@ class IncomeController extends Controller
         return Inertia::render(
             'Income/Index',
             [
-                'incomes' => $incomes,
+                'incomes' =>
+                    $incomes,
 
-                'summary' => $summary,
+                'summary' =>
+                    $summary,
 
-                'categories' => $categories,
+                'categories' =>
+                    $categories,
 
                 'filters' => [
-                    'search' => $search,
-                    'category_id' => $categoryId,
-                    'start_date' => $startDate,
-                    'end_date' => $endDate,
+                    'search' =>
+                        $filters['search'] ?? '',
+
+                    'category_id' =>
+                        $filters['category_id']
+                            ? (string) $filters['category_id']
+                            : '',
+
+                    'start_date' =>
+                        $filters['start_date'] ?? '',
+
+                    'end_date' =>
+                        $filters['end_date'] ?? '',
                 ],
             ]
         );
@@ -108,8 +113,11 @@ class IncomeController extends Controller
         return Inertia::render(
             'Income/Create',
             [
-                'customers' => $customers,
-                'categories' => $categories,
+                'customers' =>
+                    $customers,
+
+                'categories' =>
+                    $categories,
             ]
         );
     }
@@ -117,9 +125,11 @@ class IncomeController extends Controller
     public function store(
         StoreOperationRequest $request
     ): RedirectResponse {
-        $data = $request->validated();
+        $data =
+            $request->validated();
 
-        $data['type'] = 'income';
+        $data['type'] =
+            'income';
 
         app(OperationService::class)
             ->createOperation(
@@ -135,13 +145,17 @@ class IncomeController extends Controller
             );
     }
 
-    public function show(int $id): Response
-    {
+    public function show(
+        int $id
+    ): Response {
         $income = Operation::where(
             'business_id',
             auth()->user()->business_id
         )
-            ->where('type', 'income')
+            ->where(
+                'type',
+                'income'
+            )
             ->with([
                 'customer',
                 'category',
@@ -151,18 +165,23 @@ class IncomeController extends Controller
         return Inertia::render(
             'Income/Show',
             [
-                'income' => $income,
+                'income' =>
+                    $income,
             ]
         );
     }
 
-    public function edit(int $id): Response
-    {
+    public function edit(
+        int $id
+    ): Response {
         $income = Operation::where(
             'business_id',
             auth()->user()->business_id
         )
-            ->where('type', 'income')
+            ->where(
+                'type',
+                'income'
+            )
             ->with([
                 'customer',
                 'category',
@@ -183,7 +202,10 @@ class IncomeController extends Controller
             'business_id',
             auth()->user()->business_id
         )
-            ->where('type', 'income')
+            ->where(
+                'type',
+                'income'
+            )
             ->orderBy('name')
             ->get([
                 'id',
@@ -194,9 +216,14 @@ class IncomeController extends Controller
         return Inertia::render(
             'Income/Edit',
             [
-                'income' => $income,
-                'customers' => $customers,
-                'categories' => $categories,
+                'income' =>
+                    $income,
+
+                'customers' =>
+                    $customers,
+
+                'categories' =>
+                    $categories,
             ]
         );
     }
@@ -209,12 +236,17 @@ class IncomeController extends Controller
             'business_id',
             auth()->user()->business_id
         )
-            ->where('type', 'income')
+            ->where(
+                'type',
+                'income'
+            )
             ->findOrFail($id);
 
-        $data = $request->validated();
+        $data =
+            $request->validated();
 
-        $data['type'] = 'income';
+        $data['type'] =
+            'income';
 
         app(OperationService::class)
             ->updateOperation(
@@ -230,13 +262,17 @@ class IncomeController extends Controller
             );
     }
 
-    public function destroy(int $id): RedirectResponse
-    {
+    public function destroy(
+        int $id
+    ): RedirectResponse {
         $income = Operation::where(
             'business_id',
             auth()->user()->business_id
         )
-            ->where('type', 'income')
+            ->where(
+                'type',
+                'income'
+            )
             ->findOrFail($id);
 
         app(OperationService::class)
