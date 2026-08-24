@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Customer;
 use App\Models\Expense;
+use App\Models\Operation;
 use App\Models\Payment;
 use App\Models\Sale;
 use Carbon\CarbonImmutable;
@@ -15,95 +16,174 @@ class DashboardService
         ?string $startDate = null,
         ?string $endDate = null
     ): array {
+        /*
+        |--------------------------------------------------------------------------
+        | Sales
+        |--------------------------------------------------------------------------
+        */
+
         $salesQuery = Sale::where(
             'business_id',
             $businessId
-        )->whereHas(
-            'status',
-            function ($query) {
-                $query->where(
-                    'slug',
-                    '!=',
-                    'cancelled'
-                );
-            }
-        );
+        )
+            ->whereHas(
+                'status',
+                function ($query) {
+                    $query->where(
+                        'slug',
+                        '!=',
+                        'cancelled'
+                    );
+                }
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Income
+        |--------------------------------------------------------------------------
+        */
+
+        $incomeQuery = Operation::where(
+            'business_id',
+            $businessId
+        )
+            ->where(
+                'type',
+                'income'
+            );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Expenses
+        |--------------------------------------------------------------------------
+        */
 
         $expensesQuery = Expense::where(
             'business_id',
             $businessId
         );
 
-        if ($startDate) {
-            $salesQuery->whereDate(
-                'sold_at',
-                '>=',
-                $startDate
-            );
+        /*
+        |--------------------------------------------------------------------------
+        | Date Filters
+        |--------------------------------------------------------------------------
+        */
 
-            $expensesQuery->whereDate(
-                'expense_date',
-                '>=',
-                $startDate
-            );
-        }
+        $this->applyDateFilter(
+            $salesQuery,
+            'sold_at',
+            $startDate,
+            $endDate
+        );
 
-        if ($endDate) {
-            $salesQuery->whereDate(
-                'sold_at',
-                '<=',
-                $endDate
-            );
+        $this->applyDateFilter(
+            $incomeQuery,
+            'operation_date',
+            $startDate,
+            $endDate
+        );
 
-            $expensesQuery->whereDate(
-                'expense_date',
-                '<=',
-                $endDate
-            );
-        }
+        $this->applyDateFilter(
+            $expensesQuery,
+            'expense_date',
+            $startDate,
+            $endDate
+        );
 
-        $totalSales = (clone $salesQuery)
-            ->sum('amount');
+        /*
+        |--------------------------------------------------------------------------
+        | Summary
+        |--------------------------------------------------------------------------
+        */
 
-        $salesIds = (clone $salesQuery)
-            ->pluck('id');
+        $totalSales = (float) (
+            clone $salesQuery
+        )->sum('amount');
 
-        $collected = Payment::whereIn(
+        $totalIncome = (float) (
+            clone $incomeQuery
+        )->sum('amount');
+
+        $salesIds = (
+            clone $salesQuery
+        )->pluck('id');
+
+        $collected = (float) Payment::whereIn(
             'sale_id',
             $salesIds
         )->sum('amount');
 
-        $expenses = (clone $expensesQuery)
-            ->sum('amount');
+        $expenses = (float) (
+            clone $expensesQuery
+        )->sum('amount');
 
-        $salesCount = (clone $salesQuery)
-            ->count();
+        $salesCount = (
+            clone $salesQuery
+        )->count();
+
+        $incomeCount = (
+            clone $incomeQuery
+        )->count();
 
         $customersCount = Customer::where(
             'business_id',
             $businessId
         )->count();
 
+        $outstanding = max(
+            0,
+            $totalSales - $collected
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Net Balance
+        |--------------------------------------------------------------------------
+        |
+        | Collected sales
+        | + Other income
+        | - Expenses
+        |
+        */
+
+        $netBalance =
+            $collected +
+            $totalIncome -
+            $expenses;
+
+        /*
+        |--------------------------------------------------------------------------
+        | Return Dashboard Data
+        |--------------------------------------------------------------------------
+        */
+
         return [
             'totalSales' =>
-                (float) $totalSales,
+                $totalSales,
+
+            'totalIncome' =>
+                $totalIncome,
 
             'collected' =>
-                (float) $collected,
+                $collected,
 
             'outstanding' =>
-                (float) $totalSales -
-                (float) $collected,
+                $outstanding,
 
             'expenses' =>
-                (float) $expenses,
+                $expenses,
+
+            'netBalance' =>
+                $netBalance,
 
             'profit' =>
-                (float) $totalSales -
-                (float) $expenses,
+                $netBalance,
 
             'salesCount' =>
                 $salesCount,
+
+            'incomeCount' =>
+                $incomeCount,
 
             'customersCount' =>
                 $customersCount,
@@ -122,35 +202,56 @@ class DashboardService
                     $endDate
                 ),
 
+            'recentIncome' =>
+                $this->getRecentIncome(
+                    $businessId,
+                    $startDate,
+                    $endDate
+                ),
+
             'recentExpenses' =>
                 $this->getRecentExpenses(
                     $businessId,
                     $startDate,
                     $endDate
                 ),
-
-            'periodSales' =>
-                $this->getPeriodSales(
-                    $businessId,
-                    $startDate,
-                    $endDate
-                ),
-
-            'periodExpenses' =>
-                $this->getPeriodExpenses(
-                    $businessId,
-                    $startDate,
-                    $endDate
-                ),
-
-            'dailyBreakdown' =>
-                $this->getDailyBreakdown(
-                    $businessId,
-                    $startDate,
-                    $endDate
-                ),
         ];
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Date Filter
+    |--------------------------------------------------------------------------
+    */
+
+    private function applyDateFilter(
+        $query,
+        string $column,
+        ?string $startDate,
+        ?string $endDate
+    ): void {
+        if ($startDate) {
+            $query->whereDate(
+                $column,
+                '>=',
+                $startDate
+            );
+        }
+
+        if ($endDate) {
+            $query->whereDate(
+                $column,
+                '<=',
+                $endDate
+            );
+        }
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Monthly Overview
+    |--------------------------------------------------------------------------
+    */
 
     private function getMonthlyOverview(
         int $businessId,
@@ -160,7 +261,8 @@ class DashboardService
         $months = [];
 
         $currentMonth =
-            CarbonImmutable::now()->startOfMonth();
+            CarbonImmutable::now()
+                ->startOfMonth();
 
         for (
             $index = 5;
@@ -171,6 +273,12 @@ class DashboardService
                 $currentMonth->subMonths(
                     $index
                 );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Sales
+            |--------------------------------------------------------------------------
+            */
 
             $salesQuery = Sale::where(
                 'business_id',
@@ -186,72 +294,140 @@ class DashboardService
                         );
                     }
                 )
-                ->whereBetween('sold_at', [
-                    $month->startOfMonth(),
-                    $month->endOfMonth(),
-                ]);
+                ->whereBetween(
+                    'sold_at',
+                    [
+                        $month->startOfMonth(),
+                        $month->endOfMonth(),
+                    ]
+                );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Income
+            |--------------------------------------------------------------------------
+            */
+
+            $incomeQuery = Operation::where(
+                'business_id',
+                $businessId
+            )
+                ->where(
+                    'type',
+                    'income'
+                )
+                ->whereBetween(
+                    'operation_date',
+                    [
+                        $month
+                            ->startOfMonth()
+                            ->toDateString(),
+
+                        $month
+                            ->endOfMonth()
+                            ->toDateString(),
+                    ]
+                );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Expenses
+            |--------------------------------------------------------------------------
+            */
 
             $expensesQuery = Expense::where(
                 'business_id',
                 $businessId
-            )->whereBetween('expense_date', [
-                $month
-                    ->startOfMonth()
-                    ->toDateString(),
-
-                $month
-                    ->endOfMonth()
-                    ->toDateString(),
-            ]);
-
-            if ($startDate) {
-                $salesQuery->whereDate(
-                    'sold_at',
-                    '>=',
-                    $startDate
-                );
-
-                $expensesQuery->whereDate(
+            )
+                ->whereBetween(
                     'expense_date',
-                    '>=',
-                    $startDate
-                );
-            }
+                    [
+                        $month
+                            ->startOfMonth()
+                            ->toDateString(),
 
-            if ($endDate) {
-                $salesQuery->whereDate(
-                    'sold_at',
-                    '<=',
-                    $endDate
+                        $month
+                            ->endOfMonth()
+                            ->toDateString(),
+                    ]
                 );
 
-                $expensesQuery->whereDate(
-                    'expense_date',
-                    '<=',
-                    $endDate
-                );
-            }
+            /*
+            |--------------------------------------------------------------------------
+            | Selected Date Range
+            |--------------------------------------------------------------------------
+            */
+
+            $this->applyDateFilter(
+                $salesQuery,
+                'sold_at',
+                $startDate,
+                $endDate
+            );
+
+            $this->applyDateFilter(
+                $incomeQuery,
+                'operation_date',
+                $startDate,
+                $endDate
+            );
+
+            $this->applyDateFilter(
+                $expensesQuery,
+                'expense_date',
+                $startDate,
+                $endDate
+            );
+
+            /*
+            |--------------------------------------------------------------------------
+            | Totals
+            |--------------------------------------------------------------------------
+            */
 
             $sales =
-                $salesQuery->sum('amount');
+                (float) $salesQuery->sum(
+                    'amount'
+                );
+
+            $income =
+                (float) $incomeQuery->sum(
+                    'amount'
+                );
 
             $expenses =
-                $expensesQuery->sum('amount');
+                (float) $expensesQuery->sum(
+                    'amount'
+                );
 
             $months[] = [
                 'label' =>
                     $month->format('M'),
 
                 'sales' =>
-                    (float) $sales,
+                    $sales,
+
+                'income' =>
+                    $income,
 
                 'expenses' =>
-                    (float) $expenses,
+                    $expenses,
+
+                'net' =>
+                    $sales +
+                    $income -
+                    $expenses,
             ];
         }
 
         return $months;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recent Sales
+    |--------------------------------------------------------------------------
+    */
 
     private function getRecentSales(
         int $businessId,
@@ -277,27 +453,61 @@ class DashboardService
                 }
             );
 
-        if ($startDate) {
-            $query->whereDate(
-                'sold_at',
-                '>=',
-                $startDate
-            );
-        }
-
-        if ($endDate) {
-            $query->whereDate(
-                'sold_at',
-                '<=',
-                $endDate
-            );
-        }
+        $this->applyDateFilter(
+            $query,
+            'sold_at',
+            $startDate,
+            $endDate
+        );
 
         return $query
             ->latest('sold_at')
             ->limit(5)
             ->get();
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recent Income
+    |--------------------------------------------------------------------------
+    */
+
+    private function getRecentIncome(
+        int $businessId,
+        ?string $startDate = null,
+        ?string $endDate = null
+    ) {
+        $query = Operation::with([
+            'customer',
+            'category',
+        ])
+            ->where(
+                'business_id',
+                $businessId
+            )
+            ->where(
+                'type',
+                'income'
+            );
+
+        $this->applyDateFilter(
+            $query,
+            'operation_date',
+            $startDate,
+            $endDate
+        );
+
+        return $query
+            ->latest('operation_date')
+            ->limit(5)
+            ->get();
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Recent Expenses
+    |--------------------------------------------------------------------------
+    */
 
     private function getRecentExpenses(
         int $businessId,
@@ -309,199 +519,16 @@ class DashboardService
             $businessId
         );
 
-        if ($startDate) {
-            $query->whereDate(
-                'expense_date',
-                '>=',
-                $startDate
-            );
-        }
-
-        if ($endDate) {
-            $query->whereDate(
-                'expense_date',
-                '<=',
-                $endDate
-            );
-        }
+        $this->applyDateFilter(
+            $query,
+            'expense_date',
+            $startDate,
+            $endDate
+        );
 
         return $query
             ->latest('expense_date')
             ->limit(5)
             ->get();
-    }
-
-    private function getPeriodSales(
-        int $businessId,
-        ?string $startDate = null,
-        ?string $endDate = null
-    ) {
-        $query = Sale::with([
-            'customer',
-            'status',
-        ])
-            ->where(
-                'business_id',
-                $businessId
-            )
-            ->whereHas(
-                'status',
-                function ($query) {
-                    $query->where(
-                        'slug',
-                        '!=',
-                        'cancelled'
-                    );
-                }
-            );
-
-        if ($startDate) {
-            $query->whereDate(
-                'sold_at',
-                '>=',
-                $startDate
-            );
-        }
-
-        if ($endDate) {
-            $query->whereDate(
-                'sold_at',
-                '<=',
-                $endDate
-            );
-        }
-
-        return $query
-            ->orderBy('sold_at')
-            ->get();
-    }
-
-    private function getPeriodExpenses(
-        int $businessId,
-        ?string $startDate = null,
-        ?string $endDate = null
-    ) {
-        $query = Expense::where(
-            'business_id',
-            $businessId
-        );
-
-        if ($startDate) {
-            $query->whereDate(
-                'expense_date',
-                '>=',
-                $startDate
-            );
-        }
-
-        if ($endDate) {
-            $query->whereDate(
-                'expense_date',
-                '<=',
-                $endDate
-            );
-        }
-
-        return $query
-            ->orderBy('expense_date')
-            ->get();
-    }
-
-    private function getDailyBreakdown(
-        int $businessId,
-        ?string $startDate = null,
-        ?string $endDate = null
-    ): array {
-        if (!$startDate && !$endDate) {
-            return [];
-        }
-
-        $start = CarbonImmutable::parse(
-            $startDate ?? $endDate
-        )->startOfDay();
-
-        $end = CarbonImmutable::parse(
-            $endDate ?? $startDate
-        )->endOfDay();
-
-        $sales = Sale::where(
-            'business_id',
-            $businessId
-        )
-            ->whereHas(
-                'status',
-                function ($query) {
-                    $query->where(
-                        'slug',
-                        '!=',
-                        'cancelled'
-                    );
-                }
-            )
-            ->whereBetween('sold_at', [
-                $start,
-                $end,
-            ])
-            ->get()
-            ->groupBy(
-                fn ($sale) =>
-                    CarbonImmutable::parse(
-                        $sale->sold_at
-                    )->toDateString()
-            );
-
-        $expenses = Expense::where(
-            'business_id',
-            $businessId
-        )
-            ->whereBetween('expense_date', [
-                $start->toDateString(),
-                $end->toDateString(),
-            ])
-            ->get()
-            ->groupBy(
-                fn ($expense) =>
-                    CarbonImmutable::parse(
-                        $expense->expense_date
-                    )->toDateString()
-            );
-
-        $days = [];
-
-        for (
-            $date = $start;
-            $date->lte($end);
-            $date = $date->addDay()
-        ) {
-            $dateKey =
-                $date->toDateString();
-
-            $dailySales =
-                $sales
-                    ->get($dateKey, collect())
-                    ->sum('amount');
-
-            $dailyExpenses =
-                $expenses
-                    ->get($dateKey, collect())
-                    ->sum('amount');
-
-            $days[] = [
-                'date' =>
-                    $dateKey,
-
-                'sales' =>
-                    (float) $dailySales,
-
-                'expenses' =>
-                    (float) $dailyExpenses,
-
-                'net' =>
-                    (float) $dailySales -
-                    (float) $dailyExpenses,
-            ];
-        }
-
-        return $days;
     }
 }
