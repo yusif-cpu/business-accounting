@@ -7,14 +7,41 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class CustomerService
 {
-    public function getCustomersForCurrentBusiness(): LengthAwarePaginator
-    {
+    public function getCustomersForCurrentBusiness(
+        ?string $search = null
+    ): LengthAwarePaginator {
         return Customer::where(
             'business_id',
             auth()->user()->business_id
         )
+            ->when(
+                $search,
+                function ($query) use ($search) {
+                    $query->where(function ($query) use (
+                        $search
+                    ) {
+                        $query
+                            ->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            )
+                            ->orWhere(
+                                'email',
+                                'like',
+                                "%{$search}%"
+                            )
+                            ->orWhere(
+                                'phone',
+                                'like',
+                                "%{$search}%"
+                            );
+                    });
+                }
+            )
             ->latest()
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
     }
 
     public function createCustomer(
@@ -42,8 +69,9 @@ class CustomerService
         return $customer;
     }
 
-    public function deleteCustomer(Customer $customer): void
-    {
+    public function deleteCustomer(
+        Customer $customer
+    ): void {
         $customer->delete();
     }
 }

@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+
 import {
     ArrowDownUp,
     BookOpen,
@@ -7,12 +8,14 @@ import {
     LayoutGrid,
     ReceiptText,
     Tags,
+    TrendingUp,
     Users,
 } from 'lucide-react';
 
 import { NavFooter } from '@/components/nav-footer';
 import { NavMain } from '@/components/nav-main';
 import { NavUser } from '@/components/nav-user';
+
 import {
     Sidebar,
     SidebarContent,
@@ -22,7 +25,9 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
 } from '@/components/ui/sidebar';
+
 import { dashboard } from '@/routes';
+
 import type { NavItem } from '@/types';
 
 const mainNavItems: NavItem[] = [
@@ -31,26 +36,37 @@ const mainNavItems: NavItem[] = [
         href: dashboard(),
         icon: LayoutGrid,
     },
+
     {
         title: 'Sales',
         href: '/sales',
         icon: ChartNoAxesCombined,
     },
+
     {
         title: 'Customers',
         href: '/customers',
         icon: Users,
     },
+
+    {
+        title: 'Income',
+        href: '/income',
+        icon: TrendingUp,
+    },
+
     {
         title: 'Expenses',
         href: '/expenses',
         icon: ReceiptText,
     },
+
     {
         title: 'Operations',
         href: '/operations',
         icon: ArrowDownUp,
     },
+
     {
         title: 'Categories',
         href: '/categories',
@@ -64,6 +80,7 @@ const footerNavItems: NavItem[] = [
         href: 'https://github.com/laravel/react-starter-kit',
         icon: FolderGit2,
     },
+
     {
         title: 'Documentation',
         href: 'https://laravel.com/docs/starter-kits#react',
@@ -73,12 +90,21 @@ const footerNavItems: NavItem[] = [
 
 export function AppSidebar() {
     return (
-        <Sidebar collapsible="icon" variant="inset">
+        <Sidebar
+            collapsible="icon"
+            variant="inset"
+        >
             <SidebarHeader>
                 <SidebarMenu>
                     <SidebarMenuItem>
-                        <SidebarMenuButton size="lg" asChild>
-                            <Link href={dashboard()} prefetch>
+                        <SidebarMenuButton
+                            size="lg"
+                            asChild
+                        >
+                            <Link
+                                href={dashboard()}
+                                prefetch
+                            >
                                 <div className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-neutral-900 text-sm font-bold text-white">
                                     B
                                 </div>
@@ -93,11 +119,17 @@ export function AppSidebar() {
             </SidebarHeader>
 
             <SidebarContent>
-                <NavMain items={mainNavItems} />
+                <NavMain
+                    items={mainNavItems}
+                />
             </SidebarContent>
 
             <SidebarFooter>
-                <NavFooter items={footerNavItems} className="mt-auto" />
+                <NavFooter
+                    items={footerNavItems}
+                    className="mt-auto"
+                />
+
                 <NavUser />
             </SidebarFooter>
         </Sidebar>

@@ -1,5 +1,5 @@
-import { Link, useForm } from '@inertiajs/react';
-import { useState } from 'react';
+import { Link, router, useForm } from '@inertiajs/react';
+import { useEffect, useState } from 'react';
 import DeleteConfirmation from '@/components/delete-confirmation';
 import AppLayout from '@/layouts/app-layout';
 
@@ -21,14 +21,46 @@ type Props = {
         data: Customer[];
         links: PaginationLink[];
     };
+    filters: {
+        search: string;
+    };
 };
 
-export default function Index({ customers }: Props) {
+export default function Index({
+    customers,
+    filters,
+}: Props) {
     const [deleteId, setDeleteId] = useState<number | null>(
         null,
     );
 
+    const [search, setSearch] = useState(
+        filters.search ?? '',
+    );
+
     const { delete: destroy, processing } = useForm();
+
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            if (search === (filters.search ?? '')) {
+                return;
+            }
+
+            router.get(
+                '/customers',
+                {
+                    search: search || undefined,
+                },
+                {
+                    preserveState: true,
+                    preserveScroll: true,
+                    replace: true,
+                },
+            );
+        }, 400);
+
+        return () => clearTimeout(timeout);
+    }, [search]);
 
     const handleDelete = () => {
         if (deleteId === null) {
@@ -40,6 +72,10 @@ export default function Index({ customers }: Props) {
                 setDeleteId(null);
             },
         });
+    };
+
+    const clearSearch = () => {
+        setSearch('');
     };
 
     return (
@@ -73,21 +109,72 @@ export default function Index({ customers }: Props) {
                         </Link>
                     </div>
 
+                    {/* SEARCH */}
+
+                    <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-4">
+                        <div className="flex flex-col gap-3 sm:flex-row">
+                            <div className="relative flex-1">
+                                <input
+                                    type="text"
+                                    value={search}
+                                    onChange={(event) =>
+                                        setSearch(
+                                            event.target.value,
+                                        )
+                                    }
+                                    placeholder="Search customers by name, email or phone..."
+                                    className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 pr-10 text-sm text-neutral-100 outline-none placeholder:text-neutral-600 focus:border-neutral-600"
+                                />
+
+                                {search && (
+                                    <button
+                                        type="button"
+                                        onClick={clearSearch}
+                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-neutral-500 transition hover:text-neutral-200"
+                                    >
+                                        ✕
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+
+                        {search && (
+                            <p className="mt-3 text-xs text-neutral-500">
+                                Searching for:{' '}
+                                <span className="text-neutral-300">
+                                    {search}
+                                </span>
+                            </p>
+                        )}
+                    </div>
+
                     {/* TABLE */}
 
                     <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
                         {customers.data.length === 0 ? (
                             <div className="p-10 text-center">
                                 <p className="text-sm text-neutral-400">
-                                    No customers found.
+                                    {search
+                                        ? 'No customers match your search.'
+                                        : 'No customers found.'}
                                 </p>
 
-                                <Link
-                                    href="/customers/create"
-                                    className="mt-4 inline-flex rounded-xl border border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:bg-neutral-800"
-                                >
-                                    Create your first customer
-                                </Link>
+                                {search ? (
+                                    <button
+                                        type="button"
+                                        onClick={clearSearch}
+                                        className="mt-4 inline-flex rounded-xl border border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:bg-neutral-800"
+                                    >
+                                        Clear search
+                                    </button>
+                                ) : (
+                                    <Link
+                                        href="/customers/create"
+                                        className="mt-4 inline-flex rounded-xl border border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:bg-neutral-800"
+                                    >
+                                        Create your first customer
+                                    </Link>
+                                )}
                             </div>
                         ) : (
                             <>

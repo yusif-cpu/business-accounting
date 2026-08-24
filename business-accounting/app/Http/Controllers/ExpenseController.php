@@ -20,11 +20,60 @@ class ExpenseController extends Controller
 
     public function index(): Response
     {
+        $search = request()->string('search')->toString();
+
+        $categoryId = request()
+            ->string('category_id')
+            ->toString();
+
+        $startDate = request()
+            ->string('start_date')
+            ->toString();
+
+        $endDate = request()
+            ->string('end_date')
+            ->toString();
+
         $expenses = $this->expenseService
-            ->getExpensesForCurrentBusiness();
+            ->getExpensesForCurrentBusiness(
+                $search ?: null,
+                $categoryId ?: null,
+                $startDate ?: null,
+                $endDate ?: null
+            );
+
+        $summary = $this->expenseService
+            ->getExpenseSummary(
+                $search ?: null,
+                $categoryId ?: null,
+                $startDate ?: null,
+                $endDate ?: null
+            );
+
+        $categories = Category::where(
+            'business_id',
+            auth()->user()->business_id
+        )
+            ->where('type', 'expense')
+            ->orderBy('name')
+            ->get([
+                'id',
+                'name',
+            ]);
 
         return Inertia::render('Expenses/Index', [
             'expenses' => $expenses,
+
+            'summary' => $summary,
+
+            'categories' => $categories,
+
+            'filters' => [
+                'search' => $search,
+                'category_id' => $categoryId,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
         ]);
     }
 

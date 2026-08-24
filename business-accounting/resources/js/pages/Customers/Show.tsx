@@ -1,4 +1,5 @@
 import { Link } from '@inertiajs/react';
+import { useMemo, useState } from 'react';
 import AppLayout from '@/layouts/app-layout';
 
 type Category = {
@@ -33,6 +34,8 @@ type Props = {
     balance: number | string;
 };
 
+type OperationFilter = 'all' | 'income' | 'expense';
+
 function formatDate(date: string) {
     const value = date.slice(0, 10);
 
@@ -58,6 +61,20 @@ export default function Show({
     totalExpenses,
     balance,
 }: Props) {
+    const [filter, setFilter] =
+        useState<OperationFilter>('all');
+
+    const filteredOperations = useMemo(() => {
+        if (filter === 'all') {
+            return customer.operations;
+        }
+
+        return customer.operations.filter(
+            (operation) =>
+                operation.type === filter,
+        );
+    }, [customer.operations, filter]);
+
     return (
         <AppLayout>
             <div className="min-h-full bg-neutral-950 p-6 text-neutral-100">
@@ -155,6 +172,7 @@ export default function Show({
                         </div>
 
                         <div className="grid gap-4 md:grid-cols-3">
+
                             {/* INCOME */}
 
                             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/5 p-5">
@@ -216,21 +234,84 @@ export default function Show({
                     {/* OPERATIONS */}
 
                     <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
-                        <div className="border-b border-neutral-800 px-6 py-5">
-                            <h2 className="font-semibold">
-                                Operations
-                            </h2>
 
-                            <p className="mt-1 text-sm text-neutral-500">
-                                Financial operations associated with this customer.
-                            </p>
+                        {/* OPERATIONS HEADER */}
+
+                        <div className="flex flex-col gap-4 border-b border-neutral-800 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                            <div>
+                                <h2 className="font-semibold">
+                                    Operations
+                                </h2>
+
+                                <p className="mt-1 text-sm text-neutral-500">
+                                    Financial operations associated with this customer.
+                                </p>
+                            </div>
+
+                            {/* FILTER */}
+
+                            <div className="flex rounded-xl border border-neutral-800 bg-neutral-950 p-1">
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setFilter('all')
+                                    }
+                                    className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                                        filter ===
+                                        'all'
+                                            ? 'bg-neutral-800 text-neutral-100'
+                                            : 'text-neutral-500 hover:text-neutral-300'
+                                    }`}
+                                >
+                                    All
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setFilter(
+                                            'income',
+                                        )
+                                    }
+                                    className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                                        filter ===
+                                        'income'
+                                            ? 'bg-emerald-500/10 text-emerald-400'
+                                            : 'text-neutral-500 hover:text-neutral-300'
+                                    }`}
+                                >
+                                    Income
+                                </button>
+
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setFilter(
+                                            'expense',
+                                        )
+                                    }
+                                    className={`rounded-lg px-3 py-2 text-xs font-semibold transition ${
+                                        filter ===
+                                        'expense'
+                                            ? 'bg-red-500/10 text-red-400'
+                                            : 'text-neutral-500 hover:text-neutral-300'
+                                    }`}
+                                >
+                                    Expense
+                                </button>
+                            </div>
                         </div>
 
-                        {customer.operations.length ===
+                        {/* OPERATIONS TABLE */}
+
+                        {filteredOperations.length ===
                         0 ? (
                             <div className="p-10 text-center">
                                 <p className="text-sm text-neutral-500">
-                                    No operations found for this customer.
+                                    {filter ===
+                                    'all'
+                                        ? 'No operations found for this customer.'
+                                        : `No ${filter} operations found for this customer.`}
                                 </p>
 
                                 <Link
@@ -268,7 +349,7 @@ export default function Show({
                                     </thead>
 
                                     <tbody className="divide-y divide-neutral-800">
-                                        {customer.operations.map(
+                                        {filteredOperations.map(
                                             (
                                                 operation,
                                             ) => (

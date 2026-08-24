@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Inertia\Inertia;
 use Inertia\Response;
+use Illuminate\Http\Request;
 
 class CustomerController extends Controller
 {
@@ -17,13 +18,20 @@ class CustomerController extends Controller
         private CustomerService $customerService
     ) {}
 
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $search = $request->string('search')->trim()->toString();
+
         $customers = $this->customerService
-            ->getCustomersForCurrentBusiness();
+            ->getCustomersForCurrentBusiness(
+                $search ?: null
+            );
 
         return Inertia::render('Customers/Index', [
             'customers' => $customers,
+            'filters' => [
+                'search' => $search,
+            ],
         ]);
     }
 

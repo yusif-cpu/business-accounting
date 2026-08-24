@@ -21,9 +21,34 @@ class OperationController extends Controller
 
     public function index(): Response
     {
+        $search = request()->string('search')->toString();
+        $type = request()->string('type')->toString();
+        $startDate = request()->string('start_date')->toString();
+        $endDate = request()->string('end_date')->toString();
+
         return Inertia::render('Operations/Index', [
             'operations' => $this->operationService
-                ->getOperationsForCurrentBusiness(),
+                ->getOperationsForCurrentBusiness(
+                    $search ?: null,
+                    $type ?: null,
+                    $startDate ?: null,
+                    $endDate ?: null
+                ),
+
+            'summary' => $this->operationService
+                ->getOperationSummary(
+                    $search ?: null,
+                    $type ?: null,
+                    $startDate ?: null,
+                    $endDate ?: null
+                ),
+
+            'filters' => [
+                'search' => $search,
+                'type' => $type,
+                'start_date' => $startDate,
+                'end_date' => $endDate,
+            ],
         ]);
     }
 

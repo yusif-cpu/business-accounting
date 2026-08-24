@@ -7,19 +7,203 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class OperationService
 {
-    public function getOperationsForCurrentBusiness(): LengthAwarePaginator
-    {
-        return Operation::with([
+    public function getOperationsForCurrentBusiness(
+        ?string $search = null,
+        ?string $type = null,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ?string $categoryId = null
+    ): LengthAwarePaginator {
+        $query = Operation::with([
             'customer',
             'category',
         ])
             ->where(
                 'business_id',
                 auth()->user()->business_id
+            );
+
+        if ($search) {
+            $query->where(function ($query) use ($search) {
+                $query
+                    ->where(
+                        'description',
+                        'like',
+                        "%{$search}%"
+                    )
+                    ->orWhereHas(
+                        'customer',
+                        function ($query) use ($search) {
+                            $query->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            );
+                        }
+                    )
+                    ->orWhereHas(
+                        'category',
+                        function ($query) use ($search) {
+                            $query->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            );
+                        }
+                    );
+            });
+        }
+
+        if (
+            $type &&
+            in_array(
+                $type,
+                ['income', 'expense'],
+                true
             )
+        ) {
+            $query->where(
+                'type',
+                $type
+            );
+        }
+
+        if ($categoryId) {
+            $query->where(
+                'category_id',
+                $categoryId
+            );
+        }
+
+        if ($startDate) {
+            $query->whereDate(
+                'operation_date',
+                '>=',
+                $startDate
+            );
+        }
+
+        if ($endDate) {
+            $query->whereDate(
+                'operation_date',
+                '<=',
+                $endDate
+            );
+        }
+
+        return $query
             ->latest('operation_date')
             ->latest('id')
-            ->paginate(10);
+            ->paginate(10)
+            ->withQueryString();
+    }
+
+    public function getOperationSummary(
+        ?string $search = null,
+        ?string $type = null,
+        ?string $startDate = null,
+        ?string $endDate = null,
+        ?string $categoryId = null
+    ): array {
+        $query = Operation::where(
+            'business_id',
+            auth()->user()->business_id
+        );
+
+        if ($search) {
+            $query->where(function ($query) use ($search) {
+                $query
+                    ->where(
+                        'description',
+                        'like',
+                        "%{$search}%"
+                    )
+                    ->orWhereHas(
+                        'customer',
+                        function ($query) use ($search) {
+                            $query->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            );
+                        }
+                    )
+                    ->orWhereHas(
+                        'category',
+                        function ($query) use ($search) {
+                            $query->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            );
+                        }
+                    );
+            });
+        }
+
+        if (
+            $type &&
+            in_array(
+                $type,
+                ['income', 'expense'],
+                true
+            )
+        ) {
+            $query->where(
+                'type',
+                $type
+            );
+        }
+
+        if ($categoryId) {
+            $query->where(
+                'category_id',
+                $categoryId
+            );
+        }
+
+        if ($startDate) {
+            $query->whereDate(
+                'operation_date',
+                '>=',
+                $startDate
+            );
+        }
+
+        if ($endDate) {
+            $query->whereDate(
+                'operation_date',
+                '<=',
+                $endDate
+            );
+        }
+
+        $income = (clone $query)
+            ->where(
+                'type',
+                'income'
+            )
+            ->sum('amount');
+
+        $expenses = (clone $query)
+            ->where(
+                'type',
+                'expense'
+            )
+            ->sum('amount');
+
+        return [
+            'income' => (float) $income,
+
+            'expenses' => (float) $expenses,
+
+            'balance' =>
+                (float) $income -
+                (float) $expenses,
+
+            'count' =>
+                (clone $query)->count(),
+        ];
     }
 
     public function createOperation(
@@ -28,14 +212,32 @@ class OperationService
     ): Operation {
         return Operation::create([
             'business_id' => $businessId,
-            'customer_id' => $data['customer_id'] ?? null,
-            'type' => $data['type'],
-            'operation_date' => $data['operation_date'],
-            'currency' => strtoupper($data['currency']),
-            'amount' => $data['amount'],
-            'category_id' => $data['category_id'] ?? null,
-            'description' => $data['description'],
-            'note' => $data['note'] ?? null,
+
+            'customer_id' =>
+                $data['customer_id'] ?? null,
+
+            'type' =>
+                $data['type'],
+
+            'operation_date' =>
+                $data['operation_date'],
+
+            'currency' =>
+                strtoupper(
+                    $data['currency']
+                ),
+
+            'amount' =>
+                $data['amount'],
+
+            'category_id' =>
+                $data['category_id'] ?? null,
+
+            'description' =>
+                $data['description'],
+
+            'note' =>
+                $data['note'] ?? null,
         ]);
     }
 
@@ -44,14 +246,31 @@ class OperationService
         array $data
     ): Operation {
         $operation->update([
-            'customer_id' => $data['customer_id'] ?? null,
-            'type' => $data['type'],
-            'operation_date' => $data['operation_date'],
-            'currency' => strtoupper($data['currency']),
-            'amount' => $data['amount'],
-            'category_id' => $data['category_id'] ?? null,
-            'description' => $data['description'],
-            'note' => $data['note'] ?? null,
+            'customer_id' =>
+                $data['customer_id'] ?? null,
+
+            'type' =>
+                $data['type'],
+
+            'operation_date' =>
+                $data['operation_date'],
+
+            'currency' =>
+                strtoupper(
+                    $data['currency']
+                ),
+
+            'amount' =>
+                $data['amount'],
+
+            'category_id' =>
+                $data['category_id'] ?? null,
+
+            'description' =>
+                $data['description'],
+
+            'note' =>
+                $data['note'] ?? null,
         ]);
 
         return $operation->fresh([
@@ -60,8 +279,9 @@ class OperationService
         ]);
     }
 
-    public function deleteOperation(Operation $operation): void
-    {
+    public function deleteOperation(
+        Operation $operation
+    ): void {
         $operation->delete();
     }
 }

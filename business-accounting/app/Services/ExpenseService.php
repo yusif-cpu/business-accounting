@@ -7,15 +7,129 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 
 class ExpenseService
 {
-    public function getExpensesForCurrentBusiness(): LengthAwarePaginator
-    {
-        return Expense::with('category')
+    public function getExpensesForCurrentBusiness(
+        ?string $search = null,
+        ?string $categoryId = null,
+        ?string $startDate = null,
+        ?string $endDate = null
+    ): LengthAwarePaginator {
+        $query = Expense::with('category')
             ->where(
                 'business_id',
                 auth()->user()->business_id
-            )
+            );
+
+        if ($search) {
+            $query->where(function ($query) use ($search) {
+                $query
+                    ->where(
+                        'description',
+                        'like',
+                        "%{$search}%"
+                    )
+                    ->orWhereHas(
+                        'category',
+                        function ($query) use ($search) {
+                            $query->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            );
+                        }
+                    );
+            });
+        }
+
+        if ($categoryId) {
+            $query->where(
+                'category_id',
+                $categoryId
+            );
+        }
+
+        if ($startDate) {
+            $query->whereDate(
+                'expense_date',
+                '>=',
+                $startDate
+            );
+        }
+
+        if ($endDate) {
+            $query->whereDate(
+                'expense_date',
+                '<=',
+                $endDate
+            );
+        }
+
+        return $query
             ->latest('expense_date')
-            ->paginate(10);
+            ->latest('id')
+            ->paginate(10)
+            ->withQueryString();
+    }
+
+    public function getExpenseSummary(
+        ?string $search = null,
+        ?string $categoryId = null,
+        ?string $startDate = null,
+        ?string $endDate = null
+    ): array {
+        $query = Expense::where(
+            'business_id',
+            auth()->user()->business_id
+        );
+
+        if ($search) {
+            $query->where(function ($query) use ($search) {
+                $query
+                    ->where(
+                        'description',
+                        'like',
+                        "%{$search}%"
+                    )
+                    ->orWhereHas(
+                        'category',
+                        function ($query) use ($search) {
+                            $query->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            );
+                        }
+                    );
+            });
+        }
+
+        if ($categoryId) {
+            $query->where(
+                'category_id',
+                $categoryId
+            );
+        }
+
+        if ($startDate) {
+            $query->whereDate(
+                'expense_date',
+                '>=',
+                $startDate
+            );
+        }
+
+        if ($endDate) {
+            $query->whereDate(
+                'expense_date',
+                '<=',
+                $endDate
+            );
+        }
+
+        return [
+            'total' => (float) $query->sum('amount'),
+
+            'count' => (clone $query)->count(),
+        ];
     }
 
     public function createExpense(
@@ -45,8 +159,9 @@ class ExpenseService
         return $expense->fresh('category');
     }
 
-    public function deleteExpense(Expense $expense): void
-    {
+    public function deleteExpense(
+        Expense $expense
+    ): void {
         $expense->delete();
     }
 }

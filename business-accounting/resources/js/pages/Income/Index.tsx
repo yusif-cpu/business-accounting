@@ -1,8 +1,22 @@
-import { Link, router, useForm } from '@inertiajs/react';
-import { FormEvent, useState } from 'react';
+import {
+    Link,
+    router,
+    useForm,
+} from '@inertiajs/react';
+
+import {
+    FormEvent,
+    useState,
+} from 'react';
+
 import DeleteConfirmation from '@/components/delete-confirmation';
+
 import AppLayout from '@/layouts/app-layout';
-import { formatDate, formatMoney } from '@/lib/formatters';
+
+import {
+    formatDate,
+    formatMoney,
+} from '@/lib/formatters';
 
 type Customer = {
     id: number;
@@ -11,45 +25,61 @@ type Customer = {
 
 type Category = {
     id: number;
-    business_id: number;
-    type: 'expense' | 'income';
     name: string;
 };
 
-type Operation = {
+type Income = {
     id: number;
-    type: 'expense' | 'income';
+
+    type: 'income';
+
     operation_date: string;
+
     currency: string;
+
     amount: string;
-    category: Category | null;
+
     description: string;
+
     customer: Customer | null;
+
+    category: Category | null;
 };
 
 type PaginationLink = {
     url: string | null;
+
     label: string;
+
     active: boolean;
 };
 
 type Props = {
-    operations: {
-        data: Operation[];
+    incomes: {
+        data: Income[];
+
         links: PaginationLink[];
     };
 
     summary: {
         income: number;
+
         expenses: number;
+
         balance: number;
+
         count: number;
     };
 
+    categories: Category[];
+
     filters: {
         search: string;
-        type: string;
+
+        category_id: string;
+
         start_date: string;
+
         end_date: string;
     };
 };
@@ -58,12 +88,12 @@ function SummaryCard({
     label,
     value,
     description,
-    valueClass = 'text-neutral-100',
 }: {
     label: string;
+
     value: string;
+
     description: string;
-    valueClass?: string;
 }) {
     return (
         <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
@@ -71,9 +101,7 @@ function SummaryCard({
                 {label}
             </p>
 
-            <p
-                className={`mt-2 text-2xl font-semibold tracking-tight ${valueClass}`}
-            >
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-emerald-400">
                 {value}
             </p>
 
@@ -85,34 +113,41 @@ function SummaryCard({
 }
 
 export default function Index({
-    operations,
+    incomes,
     summary,
+    categories,
     filters,
 }: Props) {
-    const [deleteId, setDeleteId] = useState<number | null>(
-        null,
-    );
+    const [deleteId, setDeleteId] =
+        useState<number | null>(null);
 
-    const [search, setSearch] = useState(
-        filters.search ?? '',
-    );
+    const [search, setSearch] =
+        useState(
+            filters.search ?? ''
+        );
 
-    const [type, setType] = useState(
-        filters.type ?? '',
-    );
+    const [categoryId, setCategoryId] =
+        useState(
+            filters.category_id ?? ''
+        );
 
-    const [startDate, setStartDate] = useState(
-        filters.start_date ?? '',
-    );
+    const [startDate, setStartDate] =
+        useState(
+            filters.start_date ?? ''
+        );
 
-    const [endDate, setEndDate] = useState(
-        filters.end_date ?? '',
-    );
+    const [endDate, setEndDate] =
+        useState(
+            filters.end_date ?? ''
+        );
 
     const [processingFilter, setProcessingFilter] =
         useState(false);
 
-    const { delete: destroy, processing } = useForm();
+    const {
+        delete: destroy,
+        processing,
+    } = useForm();
 
     const invalidDateRange =
         !!startDate &&
@@ -120,7 +155,7 @@ export default function Index({
         startDate > endDate;
 
     const handleFilter = (
-        event: FormEvent<HTMLFormElement>,
+        event: FormEvent<HTMLFormElement>
     ) => {
         event.preventDefault();
 
@@ -131,44 +166,59 @@ export default function Index({
         setProcessingFilter(true);
 
         router.get(
-            '/operations',
+            '/income',
             {
-                search: search || undefined,
-                type: type || undefined,
+                search:
+                    search || undefined,
+
+                category_id:
+                    categoryId || undefined,
+
                 start_date:
                     startDate || undefined,
+
                 end_date:
                     endDate || undefined,
             },
             {
                 preserveState: true,
+
                 preserveScroll: true,
+
                 replace: true,
+
                 onFinish: () => {
                     setProcessingFilter(false);
                 },
-            },
+            }
         );
     };
 
     const clearFilters = () => {
         setSearch('');
-        setType('');
+
+        setCategoryId('');
+
         setStartDate('');
+
         setEndDate('');
+
         setProcessingFilter(true);
 
         router.get(
-            '/operations',
+            '/income',
             {},
             {
                 preserveState: true,
+
                 preserveScroll: true,
+
                 replace: true,
+
                 onFinish: () => {
                     setProcessingFilter(false);
                 },
-            },
+            }
         );
     };
 
@@ -177,11 +227,14 @@ export default function Index({
             return;
         }
 
-        destroy(`/operations/${deleteId}`, {
-            onSuccess: () => {
-                setDeleteId(null);
-            },
-        });
+        destroy(
+            `/operations/${deleteId}`,
+            {
+                onSuccess: () => {
+                    setDeleteId(null);
+                },
+            }
+        );
     };
 
     return (
@@ -192,38 +245,40 @@ export default function Index({
                     {/* HEADER */}
 
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+
                         <div>
                             <p className="text-sm font-medium text-neutral-500">
-                                Operations
+                                Finance
                             </p>
 
                             <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-                                Operations
+                                Income
                             </h1>
 
                             <p className="mt-2 text-sm text-neutral-400">
-                                Track income and expenses in one journal.
+                                Manage and analyze your business income.
                             </p>
                         </div>
 
                         <Link
-                            href="/operations/create"
-                            className="inline-flex items-center justify-center rounded-xl bg-neutral-100 px-4 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white"
+                            href="/income/create"
+                            className="inline-flex items-center justify-center rounded-xl bg-emerald-500 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-400"
                         >
-                            New Operation
+                            Create Income
                         </Link>
                     </div>
 
                     {/* FILTERS */}
 
                     <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-5">
+
                         <div className="mb-5">
                             <h2 className="text-base font-semibold">
                                 Filters
                             </h2>
 
                             <p className="mt-1 text-sm text-neutral-500">
-                                Search and filter your operations.
+                                Search and filter your income.
                             </p>
                         </div>
 
@@ -231,6 +286,9 @@ export default function Index({
                             onSubmit={handleFilter}
                             className="space-y-4"
                         >
+
+                            {/* SEARCH */}
+
                             <div>
                                 <label
                                     htmlFor="search"
@@ -245,7 +303,7 @@ export default function Index({
                                     value={search}
                                     onChange={(event) =>
                                         setSearch(
-                                            event.target.value,
+                                            event.target.value
                                         )
                                     }
                                     placeholder="Description, customer or category..."
@@ -253,38 +311,54 @@ export default function Index({
                                 />
                             </div>
 
+                            {/* FILTER ROW */}
+
                             <div className="grid gap-4 md:grid-cols-3">
+
+                                {/* CATEGORY */}
+
                                 <div>
                                     <label
-                                        htmlFor="type"
+                                        htmlFor="category_id"
                                         className="mb-2 block text-sm font-medium text-neutral-400"
                                     >
-                                        Type
+                                        Category
                                     </label>
 
                                     <select
-                                        id="type"
-                                        value={type}
+                                        id="category_id"
+                                        value={categoryId}
                                         onChange={(event) =>
-                                            setType(
-                                                event.target.value,
+                                            setCategoryId(
+                                                event.target.value
                                             )
                                         }
                                         className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
                                     >
                                         <option value="">
-                                            All
+                                            All Categories
                                         </option>
 
-                                        <option value="income">
-                                            Income
-                                        </option>
-
-                                        <option value="expense">
-                                            Expense
-                                        </option>
+                                        {categories.map(
+                                            (category) => (
+                                                <option
+                                                    key={
+                                                        category.id
+                                                    }
+                                                    value={
+                                                        category.id
+                                                    }
+                                                >
+                                                    {
+                                                        category.name
+                                                    }
+                                                </option>
+                                            )
+                                        )}
                                     </select>
                                 </div>
+
+                                {/* START DATE */}
 
                                 <div>
                                     <label
@@ -300,12 +374,14 @@ export default function Index({
                                         value={startDate}
                                         onChange={(event) =>
                                             setStartDate(
-                                                event.target.value,
+                                                event.target.value
                                             )
                                         }
                                         className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
                                     />
                                 </div>
+
+                                {/* END DATE */}
 
                                 <div>
                                     <label
@@ -321,7 +397,7 @@ export default function Index({
                                         value={endDate}
                                         onChange={(event) =>
                                             setEndDate(
-                                                event.target.value,
+                                                event.target.value
                                             )
                                         }
                                         className="w-full rounded-xl border border-neutral-800 bg-neutral-950 px-4 py-3 text-sm text-neutral-100 outline-none transition focus:border-neutral-600"
@@ -329,14 +405,19 @@ export default function Index({
                                 </div>
                             </div>
 
+                            {/* DATE ERROR */}
+
                             {invalidDateRange && (
                                 <p className="text-sm text-red-400">
-                                    End date must be after or
-                                    equal to the start date.
+                                    End date must be after or equal
+                                    to the start date.
                                 </p>
                             )}
 
+                            {/* BUTTONS */}
+
                             <div className="flex flex-wrap gap-3">
+
                                 <button
                                     type="submit"
                                     disabled={
@@ -352,7 +433,9 @@ export default function Index({
 
                                 <button
                                     type="button"
-                                    onClick={clearFilters}
+                                    onClick={
+                                        clearFilters
+                                    }
                                     disabled={
                                         processingFilter
                                     }
@@ -366,70 +449,49 @@ export default function Index({
 
                     {/* SUMMARY */}
 
-                    <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="grid gap-4 sm:grid-cols-2">
+
                         <SummaryCard
-                            label="Income"
+                            label="Total Income"
                             value={formatMoney(
-                                summary.income,
+                                summary.income
                             )}
-                            description="Income in selected results"
-                            valueClass="text-emerald-400"
+                            description="Income matching your filters"
                         />
 
                         <SummaryCard
-                            label="Expenses"
-                            value={formatMoney(
-                                summary.expenses,
-                            )}
-                            description="Expenses in selected results"
-                            valueClass="text-red-400"
-                        />
-
-                        <SummaryCard
-                            label="Balance"
-                            value={formatMoney(
-                                summary.balance,
-                            )}
-                            description="Income minus expenses"
-                            valueClass={
-                                summary.balance >= 0
-                                    ? 'text-emerald-400'
-                                    : 'text-red-400'
-                            }
-                        />
-
-                        <SummaryCard
-                            label="Operations"
+                            label="Income Records"
                             value={summary.count.toString()}
-                            description="Matching operations"
+                            description="Matching income operations"
                         />
                     </div>
 
                     {/* TABLE */}
 
                     <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
-                        {operations.data.length === 0 ? (
+
+                        {incomes.data.length === 0 ? (
                             <div className="p-10 text-center">
-                                <p className="text-sm text-neutral-500">
-                                    No operations found.
+
+                                <p className="text-sm text-neutral-400">
+                                    No income found.
                                 </p>
 
                                 <Link
-                                    href="/operations/create"
+                                    href="/income/create"
                                     className="mt-4 inline-flex rounded-xl border border-neutral-700 px-4 py-2 text-sm font-medium text-neutral-200 transition hover:bg-neutral-800"
                                 >
-                                    Create your first operation
+                                    Create your first income
                                 </Link>
                             </div>
                         ) : (
                             <>
                                 <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[1050px] text-left text-sm">
+
+                                    <table className="w-full min-w-[1000px] text-left text-sm">
+
                                         <thead className="border-b border-neutral-800">
                                             <tr>
-                                                <th className="px-5 py-4 font-medium text-neutral-500">
-                                                    Type
-                                                </th>
 
                                                 <th className="px-5 py-4 font-medium text-neutral-500">
                                                     Description
@@ -454,96 +516,109 @@ export default function Index({
                                                 <th className="px-5 py-4 text-right font-medium text-neutral-500">
                                                     Actions
                                                 </th>
+
                                             </tr>
                                         </thead>
 
                                         <tbody className="divide-y divide-neutral-800">
-                                            {operations.data.map(
-                                                (operation) => (
+
+                                            {incomes.data.map(
+                                                (income) => (
                                                     <tr
                                                         key={
-                                                            operation.id
+                                                            income.id
                                                         }
                                                         className="transition hover:bg-neutral-800/30"
                                                     >
-                                                        <td className="px-5 py-4">
-                                                            <span
-                                                                className={`inline-flex rounded-full border px-2.5 py-1 text-xs font-medium capitalize ${
-                                                                    operation.type ===
-                                                                    'income'
-                                                                        ? 'border-emerald-500/20 bg-emerald-500/10 text-emerald-400'
-                                                                        : 'border-red-500/20 bg-red-500/10 text-red-400'
-                                                                }`}
-                                                            >
-                                                                {
-                                                                    operation.type
-                                                                }
-                                                            </span>
-                                                        </td>
+
+                                                        {/* DESCRIPTION */}
 
                                                         <td className="px-5 py-4">
+
                                                             <p className="font-medium text-neutral-100">
                                                                 {
-                                                                    operation.description
+                                                                    income.description
                                                                 }
                                                             </p>
 
                                                             <p className="text-xs text-neutral-500">
-                                                                Operation #
+                                                                Income #
                                                                 {
-                                                                    operation.id
+                                                                    income.id
                                                                 }
                                                             </p>
+
                                                         </td>
 
-                                                        <td className="px-5 py-4 text-neutral-400">
-                                                            {operation
-                                                                .category
-                                                                ?.name ??
-                                                                '—'}
-                                                        </td>
-
-                                                        <td className="px-5 py-4 text-neutral-400">
-                                                            {operation
-                                                                .customer
-                                                                ?.name ??
-                                                                '—'}
-                                                        </td>
-
-                                                        <td
-                                                            className={`px-5 py-4 font-semibold ${
-                                                                operation.type ===
-                                                                'income'
-                                                                    ? 'text-emerald-400'
-                                                                    : 'text-red-400'
-                                                            }`}
-                                                        >
-                                                            {formatMoney(
-                                                                operation.amount,
-                                                            )}{' '}
-                                                            {
-                                                                operation.currency
-                                                            }
-                                                        </td>
-
-                                                        <td className="px-5 py-4 text-neutral-400">
-                                                            {formatDate(
-                                                                operation.operation_date,
-                                                                true,
-                                                            )}
-                                                        </td>
+                                                        {/* CATEGORY */}
 
                                                         <td className="px-5 py-4">
+
+                                                            {income.category ? (
+                                                                <span className="inline-flex rounded-full border border-neutral-700 bg-neutral-800 px-2.5 py-1 text-xs font-medium text-neutral-300">
+                                                                    {
+                                                                        income
+                                                                            .category
+                                                                            .name
+                                                                    }
+                                                                </span>
+                                                            ) : (
+                                                                <span className="text-neutral-600">
+                                                                    No category
+                                                                </span>
+                                                            )}
+
+                                                        </td>
+
+                                                        {/* CUSTOMER */}
+
+                                                        <td className="px-5 py-4 text-neutral-400">
+
+                                                            {income.customer?.name ??
+                                                                'No customer'}
+
+                                                        </td>
+
+                                                        {/* AMOUNT */}
+
+                                                        <td className="px-5 py-4 font-semibold text-emerald-400">
+
+                                                            +
+                                                            {formatMoney(
+                                                                income.amount
+                                                            )}{' '}
+
+                                                            {
+                                                                income.currency
+                                                            }
+
+                                                        </td>
+
+                                                        {/* DATE */}
+
+                                                        <td className="px-5 py-4 text-neutral-400">
+
+                                                            {formatDate(
+                                                                income.operation_date
+                                                            )}
+
+                                                        </td>
+
+                                                        {/* ACTIONS */}
+
+                                                        <td className="px-5 py-4">
+
                                                             <div className="flex justify-end gap-4">
+
                                                                 <Link
-                                                                    href={`/operations/${operation.id}`}
+                                                                    href={`/operations/${income.id}`}
                                                                     className="text-neutral-300 transition hover:text-white"
                                                                 >
                                                                     View
                                                                 </Link>
 
                                                                 <Link
-                                                                    href={`/operations/${operation.id}/edit`}
+                                                                    href={`/operations/${income.id}/edit`}
                                                                     className="text-blue-400 transition hover:text-blue-300"
                                                                 >
                                                                     Edit
@@ -556,30 +631,35 @@ export default function Index({
                                                                     }
                                                                     onClick={() =>
                                                                         setDeleteId(
-                                                                            operation.id,
+                                                                            income.id
                                                                         )
                                                                     }
                                                                     className="text-red-400 transition hover:text-red-300 disabled:opacity-50"
                                                                 >
                                                                     Delete
                                                                 </button>
+
                                                             </div>
+
                                                         </td>
+
                                                     </tr>
-                                                ),
+                                                )
                                             )}
+
                                         </tbody>
                                     </table>
                                 </div>
 
                                 {/* PAGINATION */}
 
-                                {operations.links.length > 3 && (
+                                {incomes.links.length > 3 && (
                                     <div className="flex flex-wrap gap-2 border-t border-neutral-800 p-4">
-                                        {operations.links.map(
+
+                                        {incomes.links.map(
                                             (
                                                 link,
-                                                index,
+                                                index
                                             ) => (
                                                 <Link
                                                     key={
@@ -604,8 +684,9 @@ export default function Index({
                                                         }}
                                                     />
                                                 </Link>
-                                            ),
+                                            )
                                         )}
+
                                     </div>
                                 )}
                             </>
@@ -614,17 +695,25 @@ export default function Index({
                 </div>
             </div>
 
+            {/* DELETE */}
+
             <DeleteConfirmation
-                open={deleteId !== null}
+                open={
+                    deleteId !== null
+                }
                 onOpenChange={(open) => {
                     if (!open) {
                         setDeleteId(null);
                     }
                 }}
-                title="Delete operation?"
-                description="This operation will be permanently deleted. This action cannot be undone."
-                onConfirm={handleDelete}
-                processing={processing}
+                title="Delete income?"
+                description="This income operation will be permanently deleted. This action cannot be undone."
+                onConfirm={
+                    handleDelete
+                }
+                processing={
+                    processing
+                }
             />
         </AppLayout>
     );
