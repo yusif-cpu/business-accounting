@@ -24,7 +24,9 @@ type Props = {
 };
 
 export default function Index({ customers }: Props) {
-    const [deleteId, setDeleteId] = useState<number | null>(null);
+    const [deleteId, setDeleteId] = useState<number | null>(
+        null,
+    );
 
     const { delete: destroy, processing } = useForm();
 
@@ -44,6 +46,9 @@ export default function Index({ customers }: Props) {
         <AppLayout>
             <div className="bg-neutral-950 p-6 text-neutral-100">
                 <div className="mx-auto max-w-7xl space-y-6">
+
+                    {/* HEADER */}
+
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                         <div>
                             <p className="text-sm font-medium text-neutral-500">
@@ -68,6 +73,8 @@ export default function Index({ customers }: Props) {
                         </Link>
                     </div>
 
+                    {/* TABLE */}
+
                     <div className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900">
                         {customers.data.length === 0 ? (
                             <div className="p-10 text-center">
@@ -85,18 +92,21 @@ export default function Index({ customers }: Props) {
                         ) : (
                             <>
                                 <div className="overflow-x-auto">
-                                    <table className="w-full min-w-[800px] text-left text-sm">
+                                    <table className="w-full min-w-[850px] text-left text-sm">
                                         <thead className="border-b border-neutral-800">
                                             <tr>
                                                 <th className="px-5 py-4 font-medium text-neutral-500">
                                                     Customer
                                                 </th>
+
                                                 <th className="px-5 py-4 font-medium text-neutral-500">
                                                     Email
                                                 </th>
+
                                                 <th className="px-5 py-4 font-medium text-neutral-500">
                                                     Phone
                                                 </th>
+
                                                 <th className="px-5 py-4 text-right font-medium text-neutral-500">
                                                     Actions
                                                 </th>
@@ -104,99 +114,130 @@ export default function Index({ customers }: Props) {
                                         </thead>
 
                                         <tbody className="divide-y divide-neutral-800">
-                                            {customers.data.map((customer) => (
-                                                <tr
-                                                    key={customer.id}
-                                                    className="transition hover:bg-neutral-800/30"
-                                                >
-                                                    <td className="px-5 py-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-sm font-semibold text-neutral-300">
-                                                                {customer.name
-                                                                    .charAt(0)
-                                                                    .toUpperCase()}
+                                            {customers.data.map(
+                                                (customer) => (
+                                                    <tr
+                                                        key={
+                                                            customer.id
+                                                        }
+                                                        className="transition hover:bg-neutral-800/30"
+                                                    >
+                                                        {/* CUSTOMER */}
+
+                                                        <td className="px-5 py-4">
+                                                            <div className="flex items-center gap-3">
+                                                                <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-neutral-800 text-sm font-semibold text-neutral-300">
+                                                                    {customer.name
+                                                                        .charAt(
+                                                                            0,
+                                                                        )
+                                                                        .toUpperCase()}
+                                                                </div>
+
+                                                                <div>
+                                                                    <Link
+                                                                        href={`/customers/${customer.id}`}
+                                                                        className="font-medium text-neutral-100 transition hover:text-blue-400"
+                                                                    >
+                                                                        {
+                                                                            customer.name
+                                                                        }
+                                                                    </Link>
+
+                                                                    <p className="text-xs text-neutral-500">
+                                                                        Customer #
+                                                                        {
+                                                                            customer.id
+                                                                        }
+                                                                    </p>
+                                                                </div>
                                                             </div>
+                                                        </td>
 
-                                                            <div>
-                                                                <p className="font-medium text-neutral-100">
-                                                                    {
-                                                                        customer.name
-                                                                    }
-                                                                </p>
+                                                        {/* EMAIL */}
 
-                                                                <p className="text-xs text-neutral-500">
-                                                                    Customer #
-                                                                    {
-                                                                        customer.id
+                                                        <td className="px-5 py-4 text-neutral-300">
+                                                            {customer.email ??
+                                                                'Not provided'}
+                                                        </td>
+
+                                                        {/* PHONE */}
+
+                                                        <td className="px-5 py-4 text-neutral-300">
+                                                            {customer.phone ??
+                                                                'Not provided'}
+                                                        </td>
+
+                                                        {/* ACTIONS */}
+
+                                                        <td className="px-5 py-4">
+                                                            <div className="flex justify-end gap-4">
+                                                                <Link
+                                                                    href={`/customers/${customer.id}`}
+                                                                    className="text-neutral-300 transition hover:text-white"
+                                                                >
+                                                                    Show
+                                                                </Link>
+
+                                                                <Link
+                                                                    href={`/customers/${customer.id}/edit`}
+                                                                    className="text-blue-400 transition hover:text-blue-300"
+                                                                >
+                                                                    Edit
+                                                                </Link>
+
+                                                                <button
+                                                                    type="button"
+                                                                    disabled={
+                                                                        processing
                                                                     }
-                                                                </p>
+                                                                    onClick={() =>
+                                                                        setDeleteId(
+                                                                            customer.id,
+                                                                        )
+                                                                    }
+                                                                    className="text-red-400 transition hover:text-red-300 disabled:opacity-50"
+                                                                >
+                                                                    Delete
+                                                                </button>
                                                             </div>
-                                                        </div>
-                                                    </td>
-
-                                                    <td className="px-5 py-4 text-neutral-300">
-                                                        {customer.email ??
-                                                            'Not provided'}
-                                                    </td>
-
-                                                    <td className="px-5 py-4 text-neutral-300">
-                                                        {customer.phone ??
-                                                            'Not provided'}
-                                                    </td>
-
-                                                    <td className="px-5 py-4">
-                                                        <div className="flex justify-end gap-4">
-                                                            <Link
-                                                                href={`/customers/${customer.id}/edit`}
-                                                                className="text-blue-400 transition hover:text-blue-300"
-                                                            >
-                                                                Edit
-                                                            </Link>
-
-                                                            <button
-                                                                type="button"
-                                                                disabled={
-                                                                    processing
-                                                                }
-                                                                onClick={() =>
-                                                                    setDeleteId(
-                                                                        customer.id,
-                                                                    )
-                                                                }
-                                                                className="text-red-400 transition hover:text-red-300 disabled:opacity-50"
-                                                            >
-                                                                Delete
-                                                            </button>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            ))}
+                                                        </td>
+                                                    </tr>
+                                                ),
+                                            )}
                                         </tbody>
                                     </table>
                                 </div>
 
+                                {/* PAGINATION */}
+
                                 {customers.links.length > 3 && (
                                     <div className="flex flex-wrap gap-2 border-t border-neutral-800 p-4">
-                                        {customers.links.map((link, index) => (
-                                            <Link
-                                                key={index}
-                                                href={link.url ?? '#'}
-                                                preserveScroll
-                                                className={`rounded-lg border px-3 py-2 text-sm transition ${
-                                                    link.active
-                                                        ? 'border-neutral-600 bg-neutral-100 text-neutral-950'
-                                                        : link.url
-                                                          ? 'border-neutral-800 bg-neutral-900 text-neutral-300 hover:bg-neutral-800'
-                                                          : 'cursor-not-allowed border-neutral-900 text-neutral-600'
-                                                }`}
-                                            >
-                                                <span
-                                                    dangerouslySetInnerHTML={{
-                                                        __html: link.label,
-                                                    }}
-                                                />
-                                            </Link>
-                                        ))}
+                                        {customers.links.map(
+                                            (link, index) => (
+                                                <Link
+                                                    key={index}
+                                                    href={
+                                                        link.url ??
+                                                        '#'
+                                                    }
+                                                    preserveScroll
+                                                    className={`rounded-lg border px-3 py-2 text-sm transition ${
+                                                        link.active
+                                                            ? 'border-neutral-600 bg-neutral-100 text-neutral-950'
+                                                            : link.url
+                                                              ? 'border-neutral-800 bg-neutral-900 text-neutral-300 hover:bg-neutral-800'
+                                                              : 'cursor-not-allowed border-neutral-900 text-neutral-600'
+                                                    }`}
+                                                >
+                                                    <span
+                                                        dangerouslySetInnerHTML={{
+                                                            __html: link.label,
+                                                        }}
+                                                    />
+                                                </Link>
+                                            ),
+                                        )}
                                     </div>
                                 )}
                             </>
@@ -204,6 +245,8 @@ export default function Index({ customers }: Props) {
                     </div>
                 </div>
             </div>
+
+            {/* DELETE CONFIRMATION */}
 
             <DeleteConfirmation
                 open={deleteId !== null}

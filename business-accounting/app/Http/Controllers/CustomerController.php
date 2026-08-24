@@ -19,7 +19,8 @@ class CustomerController extends Controller
 
     public function index(): Response
     {
-        $customers = $this->customerService->getCustomersForCurrentBusiness();
+        $customers = $this->customerService
+            ->getCustomersForCurrentBusiness();
 
         return Inertia::render('Customers/Index', [
             'customers' => $customers,
@@ -31,8 +32,9 @@ class CustomerController extends Controller
         return Inertia::render('Customers/Create');
     }
 
-    public function store(StoreCustomerRequest $request): RedirectResponse
-    {
+    public function store(
+        StoreCustomerRequest $request
+    ): RedirectResponse {
         $this->customerService->createCustomer(
             auth()->user()->business_id,
             $request->validated()
@@ -40,7 +42,36 @@ class CustomerController extends Controller
 
         return redirect()
             ->route('customers.index')
-            ->with('success', 'Customer created successfully.');
+            ->with(
+                'success',
+                'Customer created successfully.'
+            );
+    }
+
+    public function show(Customer $customer): Response
+    {
+        Gate::authorize('view', $customer);
+
+        $customer->load([
+            'operations.category',
+        ]);
+
+        $totalIncome = $customer->operations
+            ->where('type', 'income')
+            ->sum('amount');
+
+        $totalExpenses = $customer->operations
+            ->where('type', 'expense')
+            ->sum('amount');
+
+        $balance = $totalIncome - $totalExpenses;
+
+        return Inertia::render('Customers/Show', [
+            'customer' => $customer,
+            'totalIncome' => $totalIncome,
+            'totalExpenses' => $totalExpenses,
+            'balance' => $balance,
+        ]);
     }
 
     public function edit(Customer $customer): Response
@@ -65,17 +96,26 @@ class CustomerController extends Controller
 
         return redirect()
             ->route('customers.index')
-            ->with('success', 'Customer updated successfully.');
+            ->with(
+                'success',
+                'Customer updated successfully.'
+            );
     }
 
-    public function destroy(Customer $customer): RedirectResponse
-    {
+    public function destroy(
+        Customer $customer
+    ): RedirectResponse {
         Gate::authorize('delete', $customer);
 
-        $this->customerService->deleteCustomer($customer);
+        $this->customerService->deleteCustomer(
+            $customer
+        );
 
         return redirect()
             ->route('customers.index')
-            ->with('success', 'Customer deleted successfully.');
+            ->with(
+                'success',
+                'Customer deleted successfully.'
+            );
     }
 }

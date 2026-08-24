@@ -21,8 +21,7 @@ Route::middleware('auth')->group(function () {
 
     Route::resource('sales', SaleController::class);
 
-    Route::resource('customers', CustomerController::class)
-        ->except(['show']);
+    Route::resource('customers', CustomerController::class);
 
     Route::resource('expenses', ExpenseController::class)
         ->except(['show']);
