@@ -2,6 +2,10 @@ import { useForm } from '@inertiajs/react';
 import { useState } from 'react';
 import FormError from '@/components/form-error';
 import AppLayout from '@/layouts/app-layout';
+import {
+    formatInputDate,
+    parseInputDate,
+} from '@/lib/formatters';
 
 type Customer = {
     id: number;
@@ -61,14 +65,21 @@ export default function Create({ customers, categories }: Props) {
     );
 
     const submit = () => {
-        activeForm.post('/operations', {
-            preserveState: true,
-            preserveScroll: true,
+        activeForm
+            .transform((data) => ({
+                ...data,
+                operation_date: parseInputDate(
+                    formatInputDate(data.operation_date),
+                ),
+            }))
+            .post('/operations', {
+                preserveState: true,
+                preserveScroll: true,
 
-            onSuccess: () => {
-                activeForm.reset();
-            },
-        });
+                onSuccess: () => {
+                    activeForm.reset();
+                },
+            });
     };
 
     const changeType = (newType: 'expense' | 'income') => {
@@ -152,22 +163,49 @@ export default function Create({ customers, categories }: Props) {
 
                                         <input
                                             id="operation_date"
-                                            type="date"
-                                            value={
-                                                activeForm.data.operation_date
-                                            }
-                                            onChange={(event) =>
+                                            type="text"
+                                            inputMode="numeric"
+                                            placeholder="DD/MM/YYYY"
+                                            maxLength={10}
+                                            value={formatInputDate(
+                                                activeForm.data.operation_date,
+                                            )}
+                                            onChange={(event) => {
+                                                const numbers =
+                                                    event.target.value
+                                                        .replace(/\D/g, '')
+                                                        .slice(0, 8);
+
+                                                let formatted = numbers;
+
+                                                if (numbers.length > 2) {
+                                                    formatted =
+                                                        numbers.slice(0, 2) +
+                                                        '/' +
+                                                        numbers.slice(2);
+                                                }
+
+                                                if (numbers.length > 4) {
+                                                    formatted =
+                                                        numbers.slice(0, 2) +
+                                                        '/' +
+                                                        numbers.slice(2, 4) +
+                                                        '/' +
+                                                        numbers.slice(4);
+                                                }
+
                                                 activeForm.setData(
                                                     'operation_date',
-                                                    event.target.value,
-                                                )
-                                            }
+                                                    parseInputDate(formatted),
+                                                );
+                                            }}
                                             className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                         />
 
                                         <FormError
                                             message={
-                                                activeForm.errors.operation_date
+                                                activeForm.errors
+                                                    .operation_date
                                             }
                                         />
                                     </div>
@@ -205,7 +243,9 @@ export default function Create({ customers, categories }: Props) {
                                         </select>
 
                                         <FormError
-                                            message={activeForm.errors.currency}
+                                            message={
+                                                activeForm.errors.currency
+                                            }
                                         />
                                     </div>
                                 </div>
@@ -273,7 +313,9 @@ export default function Create({ customers, categories }: Props) {
                                     </select>
 
                                     <FormError
-                                        message={activeForm.errors.category_id}
+                                        message={
+                                            activeForm.errors.category_id
+                                        }
                                     />
                                 </div>
 
@@ -309,7 +351,9 @@ export default function Create({ customers, categories }: Props) {
                                     </select>
 
                                     <FormError
-                                        message={activeForm.errors.customer_id}
+                                        message={
+                                            activeForm.errors.customer_id
+                                        }
                                     />
                                 </div>
                             </div>
@@ -354,7 +398,9 @@ export default function Create({ customers, categories }: Props) {
                                     />
 
                                     <FormError
-                                        message={activeForm.errors.description}
+                                        message={
+                                            activeForm.errors.description
+                                        }
                                     />
                                 </div>
 

@@ -2,6 +2,10 @@ import { Link, useForm } from '@inertiajs/react';
 import type { FormEvent } from 'react';
 import FormError from '@/components/form-error';
 import AppLayout from '@/layouts/app-layout';
+import {
+    formatInputDate,
+    parseInputDate,
+} from '@/lib/formatters';
 
 type Customer = {
     id: number;
@@ -38,7 +42,14 @@ export default function Edit({
     customers,
     categories,
 }: Props) {
-    const { data, setData, put, processing, errors } = useForm({
+    const {
+        data,
+        setData,
+        put,
+        transform,
+        processing,
+        errors,
+    } = useForm({
         type: operation.type,
         operation_date: operation.operation_date.slice(0, 10),
         currency: operation.currency,
@@ -51,6 +62,13 @@ export default function Edit({
 
     const submit = (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        transform((data) => ({
+            ...data,
+            operation_date: parseInputDate(
+                formatInputDate(data.operation_date),
+            ),
+        }));
 
         put(`/operations/${operation.id}`);
     };
@@ -147,19 +165,67 @@ export default function Edit({
 
                                             <input
                                                 id="operation_date"
-                                                type="date"
-                                                value={data.operation_date}
-                                                onChange={(event) =>
+                                                type="text"
+                                                inputMode="numeric"
+                                                placeholder="DD/MM/YYYY"
+                                                maxLength={10}
+                                                value={formatInputDate(
+                                                    data.operation_date,
+                                                )}
+                                                onChange={(event) => {
+                                                    const numbers =
+                                                        event.target.value
+                                                            .replace(
+                                                                /\D/g,
+                                                                '',
+                                                            )
+                                                            .slice(0, 8);
+
+                                                    let formatted = numbers;
+
+                                                    if (
+                                                        numbers.length > 2
+                                                    ) {
+                                                        formatted =
+                                                            numbers.slice(
+                                                                0,
+                                                                2,
+                                                            ) +
+                                                            '/' +
+                                                            numbers.slice(2);
+                                                    }
+
+                                                    if (
+                                                        numbers.length > 4
+                                                    ) {
+                                                        formatted =
+                                                            numbers.slice(
+                                                                0,
+                                                                2,
+                                                            ) +
+                                                            '/' +
+                                                            numbers.slice(
+                                                                2,
+                                                                4,
+                                                            ) +
+                                                            '/' +
+                                                            numbers.slice(4);
+                                                    }
+
                                                     setData(
                                                         'operation_date',
-                                                        event.target.value,
-                                                    )
-                                                }
+                                                        parseInputDate(
+                                                            formatted,
+                                                        ),
+                                                    );
+                                                }}
                                                 className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
                                             />
 
                                             <FormError
-                                                message={errors.operation_date}
+                                                message={
+                                                    errors.operation_date
+                                                }
                                             />
                                         </div>
 

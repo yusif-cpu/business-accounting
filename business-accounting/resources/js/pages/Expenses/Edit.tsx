@@ -1,6 +1,11 @@
 import { useForm } from '@inertiajs/react';
+import { useState } from 'react';
 import FormError from '@/components/form-error';
 import AppLayout from '@/layouts/app-layout';
+import {
+    formatInputDate,
+    parseInputDate,
+} from '@/lib/formatters';
 
 type Category = {
     id: number;
@@ -21,7 +26,13 @@ type Props = {
 };
 
 export default function Edit({ expense, categories }: Props) {
-    const { data, setData, put, processing, errors } = useForm({
+    const {
+        data,
+        setData,
+        put,
+        processing,
+        errors,
+    } = useForm({
         description: expense.description,
         amount: expense.amount,
         category_id: expense.category_id
@@ -30,16 +41,49 @@ export default function Edit({ expense, categories }: Props) {
         expense_date: expense.expense_date.slice(0, 10),
     });
 
+    const [dateInput, setDateInput] = useState(
+        formatInputDate(expense.expense_date),
+    );
+
+    const handleDateChange = (value: string) => {
+        const numbers = value.replace(/\D/g, '').slice(0, 8);
+
+        let formatted = numbers;
+
+        if (numbers.length > 2) {
+            formatted =
+                numbers.slice(0, 2) +
+                '/' +
+                numbers.slice(2);
+        }
+
+        if (numbers.length > 4) {
+            formatted =
+                numbers.slice(0, 2) +
+                '/' +
+                numbers.slice(2, 4) +
+                '/' +
+                numbers.slice(4);
+        }
+
+        setDateInput(formatted);
+    };
+
     const submit = (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
+
+        setData(
+            'expense_date',
+            parseInputDate(dateInput),
+        );
 
         put(`/expenses/${expense.id}`);
     };
 
     return (
         <AppLayout>
-            <div className="bg-neutral-950 p-6 text-neutral-100">
-                <div className="mx-auto max-w-2xl space-y-6">
+            <div className="min-h-full bg-neutral-950 p-6 text-neutral-100">
+                <div className="mx-auto max-w-4xl space-y-6">
                     <div>
                         <a
                             href="/expenses"
@@ -48,150 +92,198 @@ export default function Edit({ expense, categories }: Props) {
                             ← Back to Expenses
                         </a>
 
-                        <div className="mt-5">
-                            <p className="text-sm font-medium text-neutral-500">
-                                Expense #{expense.id}
-                            </p>
+                        <div className="mt-5 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+                            <div>
+                                <div className="flex items-center gap-3">
+                                    <h1 className="text-2xl font-semibold tracking-tight">
+                                        Edit Expense
+                                    </h1>
 
-                            <h1 className="mt-1 text-2xl font-semibold tracking-tight">
-                                Edit Expense
-                            </h1>
+                                    <span className="rounded-full border border-red-500/20 bg-red-500/10 px-2.5 py-1 text-xs font-semibold text-red-400">
+                                        Expense #{expense.id}
+                                    </span>
+                                </div>
 
-                            <p className="mt-2 text-sm text-neutral-400">
-                                Update the expense details.
-                            </p>
+                                <p className="mt-2 text-sm text-neutral-400">
+                                    Update the details of this expense.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
-                    <div className="rounded-2xl border border-neutral-800 bg-neutral-900 p-6">
-                        <form onSubmit={submit} className="space-y-6">
-                            <div>
-                                <label
-                                    htmlFor="description"
-                                    className="text-sm font-medium text-neutral-300"
-                                >
-                                    Description
-                                </label>
+                    <form
+                        onSubmit={submit}
+                        className="overflow-hidden rounded-2xl border border-neutral-800 bg-neutral-900"
+                    >
+                        <div className="border-b border-neutral-800 px-6 py-5">
+                            <h2 className="font-semibold">
+                                Expense details
+                            </h2>
 
-                                <input
-                                    id="description"
-                                    type="text"
-                                    value={data.description}
-                                    onChange={(event) =>
-                                        setData(
-                                            'description',
-                                            event.target.value,
-                                        )
-                                    }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
-                                />
+                            <p className="mt-1 text-sm text-neutral-500">
+                                Make changes to the expense information.
+                            </p>
+                        </div>
 
-                                <FormError message={errors.description} />
+                        <div className="grid gap-6 p-6 lg:grid-cols-2">
+                            <div className="space-y-5">
+                                <div>
+                                    <label
+                                        htmlFor="description"
+                                        className="text-sm font-medium text-neutral-300"
+                                    >
+                                        Description
+                                    </label>
+
+                                    <input
+                                        id="description"
+                                        type="text"
+                                        value={data.description}
+                                        onChange={(event) =>
+                                            setData(
+                                                'description',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                    />
+
+                                    <FormError
+                                        message={errors.description}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        htmlFor="amount"
+                                        className="text-sm font-medium text-neutral-300"
+                                    >
+                                        Amount
+                                    </label>
+
+                                    <div className="relative mt-2">
+                                        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-sm font-medium text-neutral-500">
+                                            ₼
+                                        </span>
+
+                                        <input
+                                            id="amount"
+                                            type="number"
+                                            step="0.01"
+                                            min="0.01"
+                                            value={data.amount}
+                                            onChange={(event) =>
+                                                setData(
+                                                    'amount',
+                                                    event.target.value,
+                                                )
+                                            }
+                                            className="w-full rounded-xl border border-neutral-800 bg-neutral-800 py-3 pl-9 pr-3 text-sm font-medium text-neutral-100 transition outline-none focus:border-neutral-600"
+                                        />
+                                    </div>
+
+                                    <FormError
+                                        message={errors.amount}
+                                    />
+                                </div>
                             </div>
 
-                            <div>
-                                <label
-                                    htmlFor="amount"
-                                    className="text-sm font-medium text-neutral-300"
-                                >
-                                    Amount
-                                </label>
+                            <div className="space-y-5">
+                                <div>
+                                    <label
+                                        htmlFor="category_id"
+                                        className="text-sm font-medium text-neutral-300"
+                                    >
+                                        Category
+                                    </label>
 
-                                <input
-                                    id="amount"
-                                    type="number"
-                                    step="0.01"
-                                    min="0.01"
-                                    value={data.amount}
-                                    onChange={(event) =>
-                                        setData('amount', event.target.value)
-                                    }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
-                                />
-
-                                <FormError message={errors.amount} />
-                            </div>
-
-                            <div>
-                                <label
-                                    htmlFor="category_id"
-                                    className="text-sm font-medium text-neutral-300"
-                                >
-                                    Category
-                                </label>
-
-                                <select
-                                    id="category_id"
-                                    value={data.category_id}
-                                    onChange={(event) =>
-                                        setData(
-                                            'category_id',
-                                            event.target.value,
-                                        )
-                                    }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
-                                >
-                                    <option value="">
-                                        Select category...
-                                    </option>
-
-                                    {categories.map((category) => (
-                                        <option
-                                            key={category.id}
-                                            value={category.id}
-                                        >
-                                            {category.name}
+                                    <select
+                                        id="category_id"
+                                        value={data.category_id}
+                                        onChange={(event) =>
+                                            setData(
+                                                'category_id',
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
+                                    >
+                                        <option value="">
+                                            Select category...
                                         </option>
-                                    ))}
-                                </select>
 
-                                <FormError message={errors.category_id} />
+                                        {categories.map((category) => (
+                                            <option
+                                                key={category.id}
+                                                value={category.id}
+                                            >
+                                                {category.name}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                    <FormError
+                                        message={errors.category_id}
+                                    />
+                                </div>
+
+                                <div>
+                                    <label
+                                        htmlFor="expense_date"
+                                        className="text-sm font-medium text-neutral-300"
+                                    >
+                                        Expense Date
+                                    </label>
+
+                                    <input
+                                        id="expense_date"
+                                        type="text"
+                                        inputMode="numeric"
+                                        placeholder="DD/MM/YYYY"
+                                        maxLength={10}
+                                        value={dateInput}
+                                        onChange={(event) =>
+                                            handleDateChange(
+                                                event.target.value,
+                                            )
+                                        }
+                                        className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-3 text-sm text-neutral-100 transition outline-none placeholder:text-neutral-600 focus:border-neutral-600"
+                                    />
+
+                                    <FormError
+                                        message={errors.expense_date}
+                                    />
+                                </div>
                             </div>
+                        </div>
 
-                            <div>
-                                <label
-                                    htmlFor="expense_date"
-                                    className="text-sm font-medium text-neutral-300"
-                                >
-                                    Expense Date
-                                </label>
+                        <div className="border-t border-neutral-800 bg-neutral-950/40 px-6 py-5">
+                            <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
+                                <p className="text-xs text-neutral-600">
+                                    Expense #{expense.id}
+                                </p>
 
-                                <input
-                                    id="expense_date"
-                                    type="date"
-                                    value={data.expense_date}
-                                    onChange={(event) =>
-                                        setData(
-                                            'expense_date',
-                                            event.target.value,
-                                        )
-                                    }
-                                    className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-sm text-neutral-100 transition outline-none focus:border-neutral-600"
-                                />
+                                <div className="flex gap-3">
+                                    <a
+                                        href="/expenses"
+                                        className="rounded-xl border border-neutral-800 px-5 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800"
+                                    >
+                                        Cancel
+                                    </a>
 
-                                <FormError message={errors.expense_date} />
+                                    <button
+                                        type="submit"
+                                        disabled={processing}
+                                        className="rounded-xl bg-red-500 px-5 py-2.5 text-sm font-semibold text-white transition hover:bg-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                                    >
+                                        {processing
+                                            ? 'Saving...'
+                                            : 'Save Changes'}
+                                    </button>
+                                </div>
                             </div>
-
-                            <div className="flex justify-end gap-3 border-t border-neutral-800 pt-5">
-                                <a
-                                    href="/expenses"
-                                    className="rounded-xl border border-neutral-800 px-4 py-2.5 text-sm font-medium text-neutral-300 transition hover:bg-neutral-800"
-                                >
-                                    Cancel
-                                </a>
-
-                                <button
-                                    type="submit"
-                                    disabled={processing}
-                                    className="rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white disabled:opacity-50"
-                                >
-                                    {processing
-                                        ? 'Saving...'
-                                        : 'Save Changes'}
-                                </button>
-                            </div>
-                        </form>
-                    </div>
+                        </div>
+                    </form>
                 </div>
             </div>
         </AppLayout>

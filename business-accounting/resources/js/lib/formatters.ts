@@ -10,24 +10,15 @@ export function formatDate(
         return '—';
     }
 
+    const datePart = value.slice(0, 10);
+    const [year, month, day] = datePart.split('-');
+
+    if (!year || !month || !day) {
+        return '—';
+    }
+
     if (dateOnly) {
-        const datePart = value.slice(0, 10);
-        const [year, month, day] = datePart.split('-').map(Number);
-
-        if (
-            !year ||
-            !month ||
-            !day ||
-            Number.isNaN(year) ||
-            Number.isNaN(month) ||
-            Number.isNaN(day)
-        ) {
-            return '—';
-        }
-
-        return new Intl.DateTimeFormat('en-US', {
-            dateStyle: 'medium',
-        }).format(new Date(year, month - 1, day, 12, 0, 0));
+        return `${day}/${month}/${year}`;
     }
 
     const date = new Date(value);
@@ -36,9 +27,36 @@ export function formatDate(
         return '—';
     }
 
-    return new Intl.DateTimeFormat('en-US', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
-        timeZone: 'UTC',
-    }).format(date);
+    const hours = String(date.getUTCHours()).padStart(2, '0');
+    const minutes = String(date.getUTCMinutes()).padStart(2, '0');
+
+    return `${day}/${month}/${year}, ${hours}:${minutes}`;
+}
+
+export function formatInputDate(value: string): string {
+    if (!value) {
+        return '';
+    }
+
+    const [year, month, day] = value.slice(0, 10).split('-');
+
+    if (!year || !month || !day) {
+        return '';
+    }
+
+    return `${day}/${month}/${year}`;
+}
+
+export function parseInputDate(value: string): string {
+    const numbers = value.replace(/\D/g, '').slice(0, 8);
+
+    if (numbers.length !== 8) {
+        return value;
+    }
+
+    const day = numbers.slice(0, 2);
+    const month = numbers.slice(2, 4);
+    const year = numbers.slice(4, 8);
+
+    return `${year}-${month}-${day}`;
 }
