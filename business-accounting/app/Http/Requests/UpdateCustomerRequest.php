@@ -40,7 +40,7 @@ class UpdateCustomerRequest extends FormRequest
 
             'documents.*' => [
                 'file',
-                'mimes:pdf,csv,jpg,jpeg,png',
+                'mimes:pdf,csv,jpg,jpeg,png,webp,gif,docx,xlsx,txt',
                 'max:10240',
             ],
         ];
@@ -56,7 +56,7 @@ class UpdateCustomerRequest extends FormRequest
                 'Each document must be a valid file.',
 
             'documents.*.mimes' =>
-                'Only PDF, CSV, JPG and PNG files are allowed.',
+                'Only PDF, CSV, TXT, JPG, PNG, WEBP, GIF, DOCX and XLSX files are allowed.',
 
             'documents.*.max' =>
                 'Each document may not be larger than 10 MB.',

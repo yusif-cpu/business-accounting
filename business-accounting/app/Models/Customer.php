@@ -10,6 +10,7 @@ class Customer extends Model
 {
     protected $fillable = [
         'business_id',
+        'external_id',
         'name',
         'email',
         'phone',
@@ -25,15 +26,13 @@ class Customer extends Model
         return $this->hasMany(Sale::class);
     }
 
+    public function documents(): HasMany
+    {
+        return $this->hasMany(CustomerDocument::class);
+    }
+
     public function operations(): HasMany
     {
         return $this->hasMany(Operation::class);
-    }
-
-    public function documents(): HasMany
-    {
-        return $this->hasMany(
-            CustomerDocument::class
-        );
     }
 }

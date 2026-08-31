@@ -20,8 +20,15 @@ type Customer = {
 type Payment = {
     id: number;
     amount: string;
-    method: string;
+    payment_source: string;
     paid_at: string;
+};
+
+const PAYMENT_SOURCE_LABELS: Record<string, string> = {
+    cart2cart: 'Cart2Cart',
+    cash: 'Cash',
+    company_bank_account: 'Company bank account',
+    deposit: 'Deposit',
 };
 
 type SaleStatus = {
@@ -386,12 +393,13 @@ export default function Show({
 
                                                 <div>
 
-                                                    <p className="font-medium capitalize">
+                                                    <p className="font-medium">
 
-                                                        {payment.method.replace(
-                                                            '_',
-                                                            ' '
-                                                        )}
+                                                        {PAYMENT_SOURCE_LABELS[
+                                                            payment
+                                                                .payment_source
+                                                        ] ??
+                                                            payment.payment_source}
 
                                                     </p>
 

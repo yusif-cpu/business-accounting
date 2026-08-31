@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Business;
 use App\Models\Expense;
+use App\Models\Operation;
 use App\Models\Payment;
 use App\Models\Sale;
 use App\Models\SaleStatus;
@@ -345,6 +346,114 @@ class DashboardTest extends TestCase
 
         $response->assertRedirect(
             '/login'
+        );
+    }
+
+    public function test_dashboard_includes_operation_expenses_without_double_counting(): void
+    {
+        $business = Business::create([
+            'business_name' =>
+                'Test Business',
+        ]);
+
+        User::factory()->create([
+            'business_id' =>
+                $business->id,
+        ]);
+
+        Expense::create([
+            'business_id' =>
+                $business->id,
+
+            'description' =>
+                'Plain Expense',
+
+            'amount' =>
+                100,
+
+            'expense_date' =>
+                now()->toDateString(),
+        ]);
+
+        Operation::create([
+            'business_id' =>
+                $business->id,
+
+            'type' =>
+                'expense',
+
+            'operation_date' =>
+                now()->toDateString(),
+
+            'currency' =>
+                'AZN',
+
+            'amount' =>
+                40,
+
+            'description' =>
+                'Operation Expense',
+        ]);
+
+        Operation::create([
+            'business_id' =>
+                $business->id,
+
+            'type' =>
+                'income',
+
+            'operation_date' =>
+                now()->toDateString(),
+
+            'currency' =>
+                'AZN',
+
+            'amount' =>
+                999,
+
+            'description' =>
+                'Operation Income',
+        ]);
+
+        $data = app(
+            DashboardService::class
+        )->getDashboardData(
+            $business->id
+        );
+
+        $this->assertSame(
+            140.0,
+            $data['expenses']
+        );
+
+        $recentDescriptions = collect(
+            $data['recentExpenses']
+        )
+            ->pluck('description')
+            ->all();
+
+        $this->assertContains(
+            'Plain Expense',
+            $recentDescriptions
+        );
+
+        $this->assertContains(
+            'Operation Expense',
+            $recentDescriptions
+        );
+
+        $this->assertNotContains(
+            'Operation Income',
+            $recentDescriptions
+        );
+
+        $monthlyExpenses = collect(
+            $data['monthlyOverview']
+        )->last()['expenses'];
+
+        $this->assertSame(
+            140.0,
+            $monthlyExpenses
         );
     }
 }

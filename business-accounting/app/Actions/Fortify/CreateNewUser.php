@@ -5,6 +5,7 @@ namespace App\Actions\Fortify;
 use App\Concerns\PasswordValidationRules;
 use App\Concerns\ProfileValidationRules;
 use App\Models\Business;
+use App\Models\SaleStatus;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
@@ -30,6 +31,27 @@ class CreateNewUser implements CreatesNewUsers
         return DB::transaction(function () use ($input) {
             $business = Business::create([
                 'business_name' => $input['business_name'],
+            ]);
+
+            SaleStatus::create([
+                'business_id' => $business->id,
+                'name' => 'Pending',
+                'slug' => 'pending',
+                'is_default' => true,
+            ]);
+
+            SaleStatus::create([
+                'business_id' => $business->id,
+                'name' => 'Paid',
+                'slug' => 'paid',
+                'is_default' => false,
+            ]);
+
+            SaleStatus::create([
+                'business_id' => $business->id,
+                'name' => 'Cancelled',
+                'slug' => 'cancelled',
+                'is_default' => false,
             ]);
 
             return User::create([

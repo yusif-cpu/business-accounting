@@ -8,6 +8,7 @@ import {
     ArrowDownUp,
     Tags,
     Building2,
+    BookOpen,
 } from 'lucide-react';
 
 import { Link, usePage } from '@inertiajs/react';
@@ -68,6 +69,11 @@ const navigationItems = [
         title: 'Business',
         href: '/businesses',
         icon: Building2,
+    },
+    {
+        title: 'Daily Journal',
+        href: '/accounting',
+        icon: BookOpen,
     },
 ];
 

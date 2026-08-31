@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
+use App\Models\SaleStatus;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -45,6 +46,50 @@ class RegistrationTest extends TestCase
         $this->assertDatabaseHas('businesses', [
             'id' => $user->business_id,
             'business_name' => 'Test Business',
+        ]);
+    }
+
+    public function test_registration_creates_default_sale_statuses_for_the_business(): void
+    {
+        $this->post('/register', [
+            'business_name' => 'Test Business',
+            'name' => 'Test User',
+            'email' => 'test@example.com',
+            'password' => 'password',
+            'password_confirmation' => 'password',
+        ]);
+
+        $user = User::where(
+            'email',
+            'test@example.com'
+        )->firstOrFail();
+
+        $statuses = SaleStatus::where(
+            'business_id',
+            $user->business_id
+        )->get();
+
+        $this->assertCount(3, $statuses);
+
+        $this->assertDatabaseHas('sale_statuses', [
+            'business_id' => $user->business_id,
+            'slug' => 'pending',
+            'name' => 'Pending',
+            'is_default' => true,
+        ]);
+
+        $this->assertDatabaseHas('sale_statuses', [
+            'business_id' => $user->business_id,
+            'slug' => 'paid',
+            'name' => 'Paid',
+            'is_default' => false,
+        ]);
+
+        $this->assertDatabaseHas('sale_statuses', [
+            'business_id' => $user->business_id,
+            'slug' => 'cancelled',
+            'name' => 'Cancelled',
+            'is_default' => false,
         ]);
     }
 }

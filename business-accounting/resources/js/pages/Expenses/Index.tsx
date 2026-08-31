@@ -11,6 +11,7 @@ type Category = {
 
 type Expense = {
     id: number;
+    source: 'expense' | 'operation';
     description: string;
     amount: string;
     category: Category | null;
@@ -434,11 +435,20 @@ export default function Index({
                                                         className="transition hover:bg-neutral-800/30"
                                                     >
                                                         <td className="px-5 py-4">
-                                                            <p className="font-medium text-neutral-100">
-                                                                {
-                                                                    expense.description
-                                                                }
-                                                            </p>
+                                                            <div className="flex items-center gap-2">
+                                                                <p className="font-medium text-neutral-100">
+                                                                    {
+                                                                        expense.description
+                                                                    }
+                                                                </p>
+
+                                                                {expense.source ===
+                                                                    'operation' && (
+                                                                    <span className="inline-flex rounded-full border border-neutral-700 bg-neutral-800 px-2 py-0.5 text-[10px] font-medium tracking-wide text-neutral-400 uppercase">
+                                                                        Operation
+                                                                    </span>
+                                                                )}
+                                                            </div>
 
                                                             <p className="text-xs text-neutral-500">
                                                                 Expense #
@@ -480,26 +490,39 @@ export default function Index({
                                                         <td className="px-5 py-4">
                                                             <div className="flex justify-end gap-4">
                                                                 <Link
-                                                                    href={`/expenses/${expense.id}/edit`}
+                                                                    href={
+                                                                        expense.source ===
+                                                                        'operation'
+                                                                            ? `/operations/${expense.id}/edit`
+                                                                            : `/expenses/${expense.id}/edit`
+                                                                    }
                                                                     className="text-blue-400 transition hover:text-blue-300"
                                                                 >
                                                                     Edit
                                                                 </Link>
 
-                                                                <button
-                                                                    type="button"
-                                                                    disabled={
-                                                                        processing
-                                                                    }
-                                                                    onClick={() =>
-                                                                        setDeleteId(
-                                                                            expense.id,
-                                                                        )
-                                                                    }
-                                                                    className="text-red-400 transition hover:text-red-300 disabled:opacity-50"
-                                                                >
-                                                                    Delete
-                                                                </button>
+                                                                {expense.source ===
+                                                                'operation' ? (
+                                                                    <span className="text-neutral-600">
+                                                                        Managed in
+                                                                        Operations
+                                                                    </span>
+                                                                ) : (
+                                                                    <button
+                                                                        type="button"
+                                                                        disabled={
+                                                                            processing
+                                                                        }
+                                                                        onClick={() =>
+                                                                            setDeleteId(
+                                                                                expense.id,
+                                                                            )
+                                                                        }
+                                                                        className="text-red-400 transition hover:text-red-300 disabled:opacity-50"
+                                                                    >
+                                                                        Delete
+                                                                    </button>
+                                                                )}
                                                             </div>
                                                         </td>
                                                     </tr>

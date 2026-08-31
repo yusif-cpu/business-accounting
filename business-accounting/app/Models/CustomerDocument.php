@@ -9,6 +9,7 @@ class CustomerDocument extends Model
 {
     protected $fillable = [
         'business_id',
+        'external_id',
         'customer_id',
         'name',
         'file_path',

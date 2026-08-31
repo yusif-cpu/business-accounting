@@ -7,6 +7,7 @@ use App\Http\Controllers\CustomerDocumentController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\JournalController;
 use App\Http\Controllers\OperationController;
 use App\Http\Controllers\PaymentController;
 use App\Http\Controllers\SaleController;
@@ -341,6 +342,33 @@ Route::middleware([
     Route::resource(
         'operations',
         OperationController::class
+    );
+
+
+    /*
+    |--------------------------------------------------------------------------
+    | Daily Journal (Mühasibatlıq)
+    |--------------------------------------------------------------------------
+    */
+
+    Route::get(
+        '/accounting',
+        [
+            JournalController::class,
+            'index',
+        ]
+    )->name(
+        'accounting.index'
+    );
+
+    Route::get(
+        '/accounting/export',
+        [
+            JournalController::class,
+            'export',
+        ]
+    )->name(
+        'accounting.export'
     );
 
 

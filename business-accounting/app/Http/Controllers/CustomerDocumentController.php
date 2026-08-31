@@ -83,6 +83,15 @@ class CustomerDocumentController extends Controller
             );
         }
 
+        $nonPreviewableMimes = [
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        ];
+
+        $disposition = in_array($mimeType, $nonPreviewableMimes, true)
+            ? 'attachment'
+            : 'inline';
+
         return response()->file(
             $disk->path(
                 $customerDocument->file_path
@@ -92,7 +101,7 @@ class CustomerDocumentController extends Controller
                     $mimeType,
 
                 'Content-Disposition' =>
-                    'inline; filename="' .
+                    $disposition . '; filename="' .
                     $customerDocument->name .
                     '"',
             ]

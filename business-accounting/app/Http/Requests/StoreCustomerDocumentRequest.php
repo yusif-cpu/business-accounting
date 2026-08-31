@@ -37,7 +37,7 @@ class StoreCustomerDocumentRequest extends FormRequest
             'document' => [
                 'required',
                 'file',
-                'mimes:pdf,csv,jpg,jpeg,png',
+                'mimes:pdf,csv,jpg,jpeg,png,webp,gif,docx,xlsx,txt',
                 'max:10240',
             ],
         ];
@@ -56,7 +56,7 @@ class StoreCustomerDocumentRequest extends FormRequest
                 'The selected document is invalid.',
 
             'document.mimes' =>
-                'Only PDF, CSV, JPG and PNG files are allowed.',
+                'Only PDF, CSV, TXT, JPG, PNG, WEBP, GIF, DOCX and XLSX files are allowed.',
 
             'document.max' =>
                 'The document may not be larger than 10 MB.',

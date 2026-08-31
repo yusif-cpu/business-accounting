@@ -123,11 +123,20 @@ export default function Edit({
     const handleFilesChange = (
         event: ChangeEvent<HTMLInputElement>
     ) => {
-        const files =
+        const newFiles =
             Array.from(
                 event.target.files ??
                     []
             );
+
+        if (newFiles.length === 0) {
+            return;
+        }
+
+        const files = [
+            ...selectedFiles,
+            ...newFiles,
+        ];
 
         setSelectedFiles(
             files
@@ -137,6 +146,8 @@ export default function Edit({
             'documents',
             files
         );
+
+        event.target.value = '';
     };
 
     const removeSelectedFile = (
@@ -575,14 +586,14 @@ export default function Edit({
                                     </span>
 
                                     <span className="mt-1 text-xs text-neutral-600">
-                                        PDF, CSV, JPG or PNG · Maximum 10 MB each
+                                        PDF, CSV, TXT, JPG, PNG, WEBP, GIF, DOCX or XLSX · Maximum 10 MB each
                                     </span>
 
                                     <input
                                         id="documents"
                                         type="file"
                                         multiple
-                                        accept=".pdf,.csv,.jpg,.jpeg,.png"
+                                        accept=".pdf,.csv,.jpg,.jpeg,.png,.webp,.gif,.docx,.xlsx,.txt"
                                         onChange={
                                             handleFilesChange
                                         }

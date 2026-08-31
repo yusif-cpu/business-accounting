@@ -9,6 +9,7 @@ class Expense extends Model
 {
     protected $fillable = [
         'business_id',
+        'external_id',
         'description',
         'amount',
         'category_id',

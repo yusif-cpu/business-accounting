@@ -15,7 +15,7 @@ type Props = {
 export default function Create({ sale }: Props) {
     const { data, setData, post, processing, errors } = useForm({
         amount: '',
-        method: 'cash',
+        payment_source: 'cash',
         paid_at: new Date().toISOString().slice(0, 16),
     });
 
@@ -79,28 +79,36 @@ export default function Create({ sale }: Props) {
 
                             <div>
                                 <label
-                                    htmlFor="method"
+                                    htmlFor="payment_source"
                                     className="text-sm font-medium text-neutral-200"
                                 >
-                                    Payment Method
+                                    Payment Source
                                 </label>
 
                                 <select
-                                    id="method"
-                                    value={data.method}
+                                    id="payment_source"
+                                    value={data.payment_source}
                                     onChange={(event) =>
-                                        setData('method', event.target.value)
+                                        setData(
+                                            'payment_source',
+                                            event.target.value
+                                        )
                                     }
                                     className="mt-2 w-full rounded-xl border border-neutral-800 bg-neutral-800 px-3 py-2.5 text-neutral-100 transition outline-none focus:border-neutral-600 focus:ring-1 focus:ring-neutral-600"
                                 >
-                                    <option value="cash">Cash</option>
-                                    <option value="card">Card</option>
-                                    <option value="bank_transfer">
-                                        Bank Transfer
+                                    <option value="cart2cart">
+                                        Cart2Cart
                                     </option>
+                                    <option value="cash">Cash</option>
+                                    <option value="company_bank_account">
+                                        Company bank account
+                                    </option>
+                                    <option value="deposit">Deposit</option>
                                 </select>
 
-                                <FormError message={errors.method} />
+                                <FormError
+                                    message={errors.payment_source}
+                                />
                             </div>
 
                             <div>

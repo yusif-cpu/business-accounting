@@ -23,7 +23,7 @@ class PaymentService
     ): Payment {
         $payment = $sale->payments()->create([
             'amount' => $data['amount'],
-            'method' => $data['method'],
+            'payment_source' => $data['payment_source'],
             'paid_at' => $data['paid_at'],
         ]);
 
@@ -42,7 +42,7 @@ class PaymentService
         $this->updateSaleStatus($sale);
     }
 
-    private function updateSaleStatus(
+    public function updateSaleStatus(
         Sale $sale
     ): void {
         $paidAmount = (float) $sale

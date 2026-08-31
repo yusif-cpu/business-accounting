@@ -9,6 +9,7 @@ class Operation extends Model
 {
     protected $fillable = [
         'business_id',
+        'external_id',
         'customer_id',
         'type',
         'operation_date',

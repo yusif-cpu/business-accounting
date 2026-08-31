@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Business;
 use App\Models\Category;
 use App\Models\Expense;
+use App\Models\Operation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -197,5 +198,118 @@ class ExpenseTest extends TestCase
         $this->assertDatabaseHas('expenses', [
             'id' => $expenseB->id,
         ]);
+    }
+
+    public function test_operation_expenses_appear_in_expenses_list_and_summary_without_double_counting(): void
+    {
+        $business = Business::create([
+            'business_name' => 'Test Business',
+        ]);
+
+        $user = User::factory()->create([
+            'business_id' => $business->id,
+        ]);
+
+        $category = Category::create([
+            'business_id' => $business->id,
+            'type' => 'expense',
+            'name' => 'Rent',
+        ]);
+
+        $incomeCategory = Category::create([
+            'business_id' => $business->id,
+            'type' => 'income',
+            'name' => 'Sales',
+        ]);
+
+        Expense::create([
+            'business_id' => $business->id,
+            'description' => 'Plain Expense',
+            'amount' => 100,
+            'category_id' => $category->id,
+            'expense_date' => '2026-08-20',
+        ]);
+
+        Operation::create([
+            'business_id' => $business->id,
+            'type' => 'expense',
+            'operation_date' => '2026-08-21',
+            'currency' => 'AZN',
+            'amount' => 50,
+            'category_id' => $category->id,
+            'description' => 'Operation Expense',
+        ]);
+
+        Operation::create([
+            'business_id' => $business->id,
+            'type' => 'income',
+            'operation_date' => '2026-08-22',
+            'currency' => 'AZN',
+            'amount' => 999,
+            'category_id' => $incomeCategory->id,
+            'description' => 'Operation Income',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get('/expenses');
+
+        $response->assertInertia(
+            fn ($page) => $page
+                ->where(
+                    'summary.total',
+                    150
+                )
+                ->where(
+                    'summary.count',
+                    2
+                )
+                ->where(
+                    'expenses.data',
+                    function ($data) {
+                        $descriptions = collect($data)
+                            ->pluck('description')
+                            ->all();
+
+                        return count($data) === 2
+                            && in_array('Plain Expense', $descriptions, true)
+                            && in_array('Operation Expense', $descriptions, true)
+                            && !in_array('Operation Income', $descriptions, true);
+                    }
+                )
+        );
+    }
+
+    public function test_operation_expense_is_not_editable_or_deletable_via_expense_routes(): void
+    {
+        $business = Business::create([
+            'business_name' => 'Test Business',
+        ]);
+
+        $user = User::factory()->create([
+            'business_id' => $business->id,
+        ]);
+
+        $category = Category::create([
+            'business_id' => $business->id,
+            'type' => 'expense',
+            'name' => 'Rent',
+        ]);
+
+        $operation = Operation::create([
+            'business_id' => $business->id,
+            'type' => 'expense',
+            'operation_date' => '2026-08-21',
+            'currency' => 'AZN',
+            'amount' => 50,
+            'category_id' => $category->id,
+            'description' => 'Operation Expense',
+        ]);
+
+        $response = $this
+            ->actingAs($user)
+            ->get("/expenses/{$operation->id}/edit");
+
+        $response->assertStatus(404);
     }
 }

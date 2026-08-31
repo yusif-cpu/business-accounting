@@ -72,6 +72,8 @@ function isImage(
         'image/jpeg',
         'image/png',
         'image/jpg',
+        'image/webp',
+        'image/gif',
     ].includes(
         document.mime_type
     );
@@ -96,6 +98,71 @@ function isCsv(
             .toLowerCase()
             .endsWith('.csv')
     );
+}
+
+function isText(
+    document: CustomerDocument
+): boolean {
+    return (
+        document.mime_type ===
+            'text/plain' ||
+        document.name
+            .toLowerCase()
+            .endsWith('.txt')
+    );
+}
+
+function isDocx(
+    document: CustomerDocument
+): boolean {
+    return (
+        document.mime_type ===
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+    );
+}
+
+function isXlsx(
+    document: CustomerDocument
+): boolean {
+    return (
+        document.mime_type ===
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    );
+}
+
+function isOfficeDocument(
+    document: CustomerDocument
+): boolean {
+    return (
+        isDocx(document) ||
+        isXlsx(document)
+    );
+}
+
+function documentTypeLabel(
+    document: CustomerDocument
+): string {
+    if (isPdf(document)) {
+        return 'PDF';
+    }
+
+    if (isCsv(document)) {
+        return 'CSV';
+    }
+
+    if (isText(document)) {
+        return 'TXT';
+    }
+
+    if (isDocx(document)) {
+        return 'DOCX';
+    }
+
+    if (isXlsx(document)) {
+        return 'XLSX';
+    }
+
+    return 'FILE';
 }
 
 export default function CustomerDocuments({
@@ -458,7 +525,7 @@ export default function CustomerDocuments({
                             <input
                                 id="customer-document"
                                 type="file"
-                                accept=".pdf,.csv,.jpg,.jpeg,.png"
+                                accept=".pdf,.csv,.jpg,.jpeg,.png,.webp,.gif,.docx,.xlsx,.txt"
                                 onChange={
                                     handleFileChange
                                 }
@@ -469,7 +536,7 @@ export default function CustomerDocuments({
                             />
 
                             <p className="mt-2 text-xs text-neutral-600">
-                                PDF, CSV, JPG or PNG. Maximum 10 MB.
+                                PDF, CSV, TXT, JPG, PNG, WEBP, GIF, DOCX or XLSX. Maximum 10 MB.
                             </p>
 
                             {selectedFile && (
@@ -572,11 +639,9 @@ export default function CustomerDocuments({
                                                 }
                                                 className="flex size-14 shrink-0 items-center justify-center rounded-xl border border-neutral-800 bg-neutral-950 text-[11px] font-semibold uppercase text-neutral-500 transition hover:border-neutral-600 hover:text-neutral-300"
                                             >
-                                                {isPdf(
+                                                {documentTypeLabel(
                                                     document
-                                                )
-                                                    ? 'PDF'
-                                                    : 'CSV'}
+                                                )}
                                             </button>
 
                                         )}
@@ -727,9 +792,12 @@ export default function CustomerDocuments({
 
                         )}
 
-                        {isPdf(
+                        {(isPdf(
                             previewDocument
-                        ) && (
+                        ) ||
+                            isText(
+                                previewDocument
+                            )) && (
 
                             <div className="min-h-0 flex-1 bg-neutral-800">
 
@@ -738,8 +806,35 @@ export default function CustomerDocuments({
                                     title={
                                         previewDocument.name
                                     }
-                                    className="h-[78vh] w-full border-0"
+                                    className="h-[78vh] w-full border-0 bg-white"
                                 />
+
+                            </div>
+
+                        )}
+
+                        {isOfficeDocument(
+                            previewDocument
+                        ) && (
+
+                            <div className="flex min-h-[300px] flex-1 flex-col items-center justify-center gap-4 p-10 text-center">
+
+                                <p className="text-sm text-neutral-400">
+                                    No inline preview is available for{' '}
+                                    {documentTypeLabel(
+                                        previewDocument
+                                    )}{' '}
+                                    files.
+                                </p>
+
+                                <a
+                                    href={`/customer-documents/${previewDocument.id}/download`}
+                                    className="inline-flex items-center justify-center rounded-xl bg-neutral-100 px-5 py-2.5 text-sm font-semibold text-neutral-950 transition hover:bg-white"
+                                >
+                                    Download {documentTypeLabel(
+                                        previewDocument
+                                    )}
+                                </a>
 
                             </div>
 

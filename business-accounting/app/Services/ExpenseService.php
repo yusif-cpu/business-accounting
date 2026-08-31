@@ -3,7 +3,11 @@
 namespace App\Services;
 
 use App\Models\Expense;
-use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use App\Models\Operation;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator as LengthAwarePaginatorContract;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 
 class ExpenseService
 {
@@ -12,62 +16,38 @@ class ExpenseService
         ?string $categoryId = null,
         ?string $startDate = null,
         ?string $endDate = null
-    ): LengthAwarePaginator {
-        $query = Expense::with('category')
-            ->where(
-                'business_id',
-                auth()->user()->business_id
-            );
+    ): LengthAwarePaginatorContract {
+        $items = $this->mergedExpenseItems(
+            $search,
+            $categoryId,
+            $startDate,
+            $endDate
+        );
 
-        if ($search) {
-            $query->where(function ($query) use ($search) {
-                $query
-                    ->where(
-                        'description',
-                        'like',
-                        "%{$search}%"
-                    )
-                    ->orWhereHas(
-                        'category',
-                        function ($query) use ($search) {
-                            $query->where(
-                                'name',
-                                'like',
-                                "%{$search}%"
-                            );
-                        }
-                    );
-            });
-        }
+        $perPage = 10;
 
-        if ($categoryId) {
-            $query->where(
-                'category_id',
-                $categoryId
-            );
-        }
+        $currentPage = max(
+            1,
+            (int) request('page', 1)
+        );
 
-        if ($startDate) {
-            $query->whereDate(
-                'expense_date',
-                '>=',
-                $startDate
-            );
-        }
+        $itemsForPage = $items
+            ->slice(
+                ($currentPage - 1) * $perPage,
+                $perPage
+            )
+            ->values();
 
-        if ($endDate) {
-            $query->whereDate(
-                'expense_date',
-                '<=',
-                $endDate
-            );
-        }
-
-        return $query
-            ->latest('expense_date')
-            ->latest('id')
-            ->paginate(10)
-            ->withQueryString();
+        return new LengthAwarePaginator(
+            $itemsForPage,
+            $items->count(),
+            $perPage,
+            $currentPage,
+            [
+                'path' => request()->url(),
+                'query' => request()->query(),
+            ]
+        );
     }
 
     public function getExpenseSummary(
@@ -76,10 +56,85 @@ class ExpenseService
         ?string $startDate = null,
         ?string $endDate = null
     ): array {
-        $query = Expense::where(
-            'business_id',
-            auth()->user()->business_id
+        $items = $this->mergedExpenseItems(
+            $search,
+            $categoryId,
+            $startDate,
+            $endDate
         );
+
+        return [
+            'total' => (float) $items->sum('amount'),
+
+            'count' => $items->count(),
+        ];
+    }
+
+    /**
+     * Merge Expense rows with Operation(type=expense) rows into a single,
+     * normalized, date-sorted collection. Both tables are unrelated (no
+     * shared key), so this fetches each filtered set and combines them
+     * in memory rather than via a database-level UNION.
+     */
+    private function mergedExpenseItems(
+        ?string $search,
+        ?string $categoryId,
+        ?string $startDate,
+        ?string $endDate
+    ): Collection {
+        $businessId =
+            auth()->user()->business_id;
+
+        $expenses = $this
+            ->filteredExpenseQuery(
+                $businessId,
+                $search,
+                $categoryId,
+                $startDate,
+                $endDate
+            )
+            ->get()
+            ->map(
+                fn (Expense $expense) =>
+                    $this->normalizeExpense($expense)
+            );
+
+        $operationExpenses = $this
+            ->filteredOperationExpenseQuery(
+                $businessId,
+                $search,
+                $categoryId,
+                $startDate,
+                $endDate
+            )
+            ->get()
+            ->map(
+                fn (Operation $operation) =>
+                    $this->normalizeOperationExpense($operation)
+            );
+
+        return $expenses
+            ->concat($operationExpenses)
+            ->sort(
+                fn (array $a, array $b) =>
+                    $b['expense_date'] <=> $a['expense_date']
+                        ?: $b['id'] <=> $a['id']
+            )
+            ->values();
+    }
+
+    private function filteredExpenseQuery(
+        int $businessId,
+        ?string $search,
+        ?string $categoryId,
+        ?string $startDate,
+        ?string $endDate
+    ): Builder {
+        $query = Expense::with('category')
+            ->where(
+                'business_id',
+                $businessId
+            );
 
         if ($search) {
             $query->where(function ($query) use ($search) {
@@ -125,10 +180,116 @@ class ExpenseService
             );
         }
 
-        return [
-            'total' => (float) $query->sum('amount'),
+        return $query;
+    }
 
-            'count' => (clone $query)->count(),
+    private function filteredOperationExpenseQuery(
+        int $businessId,
+        ?string $search,
+        ?string $categoryId,
+        ?string $startDate,
+        ?string $endDate
+    ): Builder {
+        $query = Operation::with('category')
+            ->where(
+                'business_id',
+                $businessId
+            )
+            ->where(
+                'type',
+                'expense'
+            );
+
+        if ($search) {
+            $query->where(function ($query) use ($search) {
+                $query
+                    ->where(
+                        'description',
+                        'like',
+                        "%{$search}%"
+                    )
+                    ->orWhereHas(
+                        'category',
+                        function ($query) use ($search) {
+                            $query->where(
+                                'name',
+                                'like',
+                                "%{$search}%"
+                            );
+                        }
+                    );
+            });
+        }
+
+        if ($categoryId) {
+            $query->where(
+                'category_id',
+                $categoryId
+            );
+        }
+
+        if ($startDate) {
+            $query->whereDate(
+                'operation_date',
+                '>=',
+                $startDate
+            );
+        }
+
+        if ($endDate) {
+            $query->whereDate(
+                'operation_date',
+                '<=',
+                $endDate
+            );
+        }
+
+        return $query;
+    }
+
+    private function normalizeExpense(
+        Expense $expense
+    ): array {
+        return [
+            'id' => $expense->id,
+
+            'source' => 'expense',
+
+            'description' => $expense->description,
+
+            'amount' => $expense->amount,
+
+            'category' => $expense->category
+                ? [
+                    'id' => $expense->category->id,
+                    'name' => $expense->category->name,
+                ]
+                : null,
+
+            'expense_date' => $expense->expense_date->toDateString(),
+        ];
+    }
+
+    private function normalizeOperationExpense(
+        Operation $operation
+    ): array {
+        return [
+            'id' => $operation->id,
+
+            'source' => 'operation',
+
+            'description' => $operation->description,
+
+            'amount' => $operation->amount,
+
+            'category' => $operation->category
+                ? [
+                    'id' => $operation->category->id,
+                    'name' => $operation->category->name,
+                ]
+                : null,
+
+            'expense_date' => $operation->operation_date->toDateString(),
         ];
     }
 

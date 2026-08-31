@@ -64,6 +64,7 @@ type Income = {
 
 type Expense = {
     id: number;
+    source: 'expense' | 'operation';
     description: string;
     amount: string;
     category: string | null;
@@ -972,7 +973,12 @@ export default function Dashboard({
                                                 key={
                                                     expense.id
                                                 }
-                                                href={`/expenses/${expense.id}/edit`}
+                                                href={
+                                                    expense.source ===
+                                                    'operation'
+                                                        ? `/operations/${expense.id}/edit`
+                                                        : `/expenses/${expense.id}/edit`
+                                                }
                                                 className="flex items-center justify-between gap-4 p-5 transition hover:bg-neutral-800/30"
                                             >
 

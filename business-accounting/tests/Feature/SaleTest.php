@@ -165,7 +165,7 @@ class SaleTest extends TestCase
                     'amount' =>
                         150,
 
-                    'method' =>
+                    'payment_source' =>
                         'cash',
 
                     'paid_at' =>
@@ -230,7 +230,7 @@ class SaleTest extends TestCase
                     'amount' =>
                         100,
 
-                    'method' =>
+                    'payment_source' =>
                         'cash',
 
                     'paid_at' =>
@@ -253,7 +253,7 @@ class SaleTest extends TestCase
                 'amount' =>
                     100,
 
-                'method' =>
+                'payment_source' =>
                     'cash',
             ]
         );
@@ -309,8 +309,8 @@ class SaleTest extends TestCase
                     'amount' =>
                         40,
 
-                    'method' =>
-                        'card',
+                    'payment_source' =>
+                        'deposit',
 
                     'paid_at' =>
                         now()->format(
@@ -380,7 +380,7 @@ class SaleTest extends TestCase
             'amount' =>
                 100,
 
-            'method' =>
+            'payment_source' =>
                 'cash',
 
             'paid_at' =>
@@ -463,7 +463,7 @@ class SaleTest extends TestCase
             'amount' =>
                 100,
 
-            'method' =>
+            'payment_source' =>
                 'cash',
 
             'paid_at' =>

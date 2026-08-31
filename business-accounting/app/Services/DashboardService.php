@@ -63,6 +63,15 @@ class DashboardService
             $businessId
         );
 
+        $operationExpensesQuery = Operation::where(
+            'business_id',
+            $businessId
+        )
+            ->where(
+                'type',
+                'expense'
+            );
+
         /*
         |--------------------------------------------------------------------------
         | Date Filters
@@ -86,6 +95,13 @@ class DashboardService
         $this->applyDateFilter(
             $expensesQuery,
             'expense_date',
+            $startDate,
+            $endDate
+        );
+
+        $this->applyDateFilter(
+            $operationExpensesQuery,
+            'operation_date',
             $startDate,
             $endDate
         );
@@ -115,6 +131,8 @@ class DashboardService
 
         $expenses = (float) (
             clone $expensesQuery
+        )->sum('amount') + (float) (
+            clone $operationExpensesQuery
         )->sum('amount');
 
         $salesCount = (
@@ -368,6 +386,27 @@ class DashboardService
                     ]
                 );
 
+            $operationExpensesQuery = Operation::where(
+                'business_id',
+                $businessId
+            )
+                ->where(
+                    'type',
+                    'expense'
+                )
+                ->whereBetween(
+                    'operation_date',
+                    [
+                        $month
+                            ->startOfMonth()
+                            ->toDateString(),
+
+                        $month
+                            ->endOfMonth()
+                            ->toDateString(),
+                    ]
+                );
+
             /*
             |--------------------------------------------------------------------------
             | Selected Date Range
@@ -395,6 +434,13 @@ class DashboardService
                 $endDate
             );
 
+            $this->applyDateFilter(
+                $operationExpensesQuery,
+                'operation_date',
+                $startDate,
+                $endDate
+            );
+
             /*
             |--------------------------------------------------------------------------
             | Totals
@@ -413,6 +459,9 @@ class DashboardService
 
             $expenses =
                 (float) $expensesQuery->sum(
+                    'amount'
+                ) +
+                (float) $operationExpensesQuery->sum(
                     'amount'
                 );
 
@@ -530,21 +579,74 @@ class DashboardService
         ?string $startDate = null,
         ?string $endDate = null
     ) {
-        $query = Expense::where(
-            'business_id',
-            $businessId
-        );
+        $expenseQuery = Expense::with('category')
+            ->where(
+                'business_id',
+                $businessId
+            );
 
         $this->applyDateFilter(
-            $query,
+            $expenseQuery,
             'expense_date',
             $startDate,
             $endDate
         );
 
-        return $query
+        $expenses = $expenseQuery
             ->latest('expense_date')
             ->limit(5)
-            ->get();
+            ->get()
+            ->map(
+                fn (Expense $expense) => [
+                    'id' => $expense->id,
+                    'source' => 'expense',
+                    'description' => $expense->description,
+                    'amount' => $expense->amount,
+                    'category' => $expense->category?->name,
+                    'expense_date' => $expense->expense_date->toDateString(),
+                ]
+            );
+
+        $operationQuery = Operation::with('category')
+            ->where(
+                'business_id',
+                $businessId
+            )
+            ->where(
+                'type',
+                'expense'
+            );
+
+        $this->applyDateFilter(
+            $operationQuery,
+            'operation_date',
+            $startDate,
+            $endDate
+        );
+
+        $operationExpenses = $operationQuery
+            ->latest('operation_date')
+            ->limit(5)
+            ->get()
+            ->map(
+                fn (Operation $operation) => [
+                    'id' => $operation->id,
+                    'source' => 'operation',
+                    'description' => $operation->description,
+                    'amount' => $operation->amount,
+                    'category' => $operation->category?->name,
+                    'expense_date' => $operation->operation_date->toDateString(),
+                ]
+            );
+
+        return $expenses
+            ->concat($operationExpenses)
+            ->sort(
+                fn (array $a, array $b) =>
+                    $b['expense_date'] <=> $a['expense_date']
+                        ?: $b['id'] <=> $a['id']
+            )
+            ->values()
+            ->take(5);
     }
 }

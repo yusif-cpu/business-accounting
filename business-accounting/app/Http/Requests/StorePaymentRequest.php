@@ -22,9 +22,9 @@ class StorePaymentRequest extends FormRequest
                 'min:0.01',
                 'max:'.$this->remainingAmount(),
             ],
-            'method' => [
+            'payment_source' => [
                 'required',
-                'in:cash,card,bank_transfer',
+                'in:cart2cart,cash,company_bank_account,deposit',
             ],
             'paid_at' => [
                 'required',
